@@ -5,12 +5,9 @@ import type { NextRequest } from "next/server";
 export async function middleware(
   request: NextRequest,
 ) {
-  let response =
+  let supabaseResponse =
     NextResponse.next({
-      request: {
-        headers:
-          request.headers,
-      },
+      request,
     });
 
   const supabase =
@@ -25,29 +22,32 @@ export async function middleware(
             return request.cookies.getAll();
           },
 
-          setAll(
-            cookiesToSet,
-          ) {
+          setAll(cookiesToSet) {
+            /*
+             * Update request cookies.
+             */
+            cookiesToSet.forEach(
+              ({
+                name,
+                value,
+              }) => {
+                request.cookies.set(
+                  name,
+                  value,
+                );
+              },
+            );
+
+            /*
+             * Update response cookies.
+             */
             cookiesToSet.forEach(
               ({
                 name,
                 value,
                 options,
               }) => {
-                request.cookies.set(
-                  name,
-                  value,
-                );
-
-                response =
-                  NextResponse.next({
-                    request: {
-                      headers:
-                        request.headers,
-                    },
-                  });
-
-                response.cookies.set(
+                supabaseResponse.cookies.set(
                   name,
                   value,
                   options,
@@ -61,21 +61,14 @@ export async function middleware(
 
   /*
    * Refresh the Supabase session.
-   *
-   * This is important for Server Components,
-   * Route Handlers and API routes.
    */
   await supabase.auth.getUser();
 
-  return response;
+  return supabaseResponse;
 }
 
 export const config = {
   matcher: [
-    /*
-     * Run middleware on all application routes
-     * except static files and Next internals.
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
