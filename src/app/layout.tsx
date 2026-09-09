@@ -4,6 +4,7 @@ import "./globals.css";
 import NavbarSwitcher from "@/components/NavbarSwitcher";
 import EnquiryPopup from "@/components/EnquiryPopup";
 import Footer from "@/components/Footer";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: {
@@ -39,6 +40,9 @@ export default function RootLayout({
         <EnquiryPopup />
 
         <Footer />
+
+        {/* Vercel Analytics */}
+        <Analytics />
       </body>
     </html>
   );
