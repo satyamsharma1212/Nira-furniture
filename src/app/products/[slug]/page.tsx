@@ -1004,7 +1004,7 @@ function ProductCardSimple({
 
   return (
     <Link
-      href={`/products/${product.slug}`}
+      href={`/product/${product.slug}`}
       className="group block"
     >
 
