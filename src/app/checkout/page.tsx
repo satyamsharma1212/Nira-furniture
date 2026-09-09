@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
-import CashfreeCheckoutButton from "@/components/payment/CashfreeCheckoutButton";
+import RazorpayCheckoutButton from "../../components/RazorpayCheckoutButton";
 
 /*
  * =========================================================
@@ -1577,11 +1577,11 @@ export default function CheckoutPage() {
 
               </div>
 
-              {/* CASHFREE */}
+              {/* RAZORPAY */}
 
               <div className="border-t border-[#241F18]/10 bg-[#FAF8F2] p-6">
 
-                <CashfreeCheckoutButton
+                <RazorpayCheckoutButton
                   customerName={
                     form.customer_name
                   }
@@ -1686,7 +1686,7 @@ export default function CheckoutPage() {
 
                   <p className="text-[10px] leading-5 text-[#8A8174]">
                     Your payment is securely
-                    processed by Cashfree. NIRA
+                    processed by Razorpay. NIRA
                     Furniture does not store your
                     card or UPI credentials.
                   </p>
