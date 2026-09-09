@@ -1,7 +1,7 @@
-export default function CategoriesPage() {
+export default function EnquiriesPage() {
   return (
-    <main>
-      <h1>Categories</h1>
+    <main className="min-h-screen p-10">
+      <h1>Enquiries</h1>
     </main>
   );
 }

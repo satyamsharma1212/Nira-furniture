@@ -2,41 +2,85 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { products } from "@/data/products";
 import NavbarClient from "./NavbarClient";
 
 const LOGO_URL = "/nira-logo3.png";
 
+const collectionItems = [
+  {
+    label: "All Collections",
+    href: "/collections",
+  },
+  {
+    label: "Indoor Furniture",
+    href: "/collections/indoor-furniture",
+  },
+  {
+    label: "Outdoor Furniture",
+    href: "/collections/outdoor-furniture",
+  },
+  {
+    label: "Seating",
+    href: "/collections/seating",
+  },
+  {
+    label: "Dining",
+    href: "/collections/dining",
+  },
+  {
+    label: "Accents",
+    href: "/collections/accents",
+  },
+];
+
 export default function Navbar() {
   const [showNavbar, setShowNavbar] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const [collectionsOpen, setCollectionsOpen] = useState(false);
 
-  const searchItems = products.map((product) => ({
-    slug: product.slug,
-    name: product.name,
-    category: product.category,
-    description: product.description,
-  }));
+  const lastScrollY = useRef(0);
+  const dropdownMenuId = useId();
+
+  const searchItems = useMemo(
+    () =>
+      products.map((product) => ({
+        slug: product.slug,
+        name: product.name,
+        category: product.category,
+        description: product.description,
+      })),
+    [],
+  );
+
+  /* ========================================================= */
+  /* SCROLL NAVBAR                                             */
+  /* ========================================================= */
 
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+      if (ticking) return;
 
-      if (currentScrollY <= 20) {
-        setShowNavbar(true);
-        setLastScrollY(currentScrollY);
-        return;
-      }
+      ticking = true;
 
-      if (currentScrollY > lastScrollY) {
-        setShowNavbar(false);
-      } else if (currentScrollY < lastScrollY) {
-        setShowNavbar(true);
-      }
+      window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
 
-      setLastScrollY(currentScrollY);
+        if (currentScrollY <= 20) {
+          setShowNavbar(true);
+        } else if (currentScrollY > lastScrollY.current + 4) {
+          setShowNavbar(false);
+          setCollectionsOpen(false);
+        } else if (currentScrollY < lastScrollY.current - 4) {
+          setShowNavbar(true);
+        }
+
+        lastScrollY.current = currentScrollY;
+        ticking = false;
+      });
     };
 
     window.addEventListener("scroll", handleScroll, {
@@ -46,327 +90,550 @@ export default function Navbar() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [lastScrollY]);
+  }, []);
+
+  /* ========================================================= */
+  /* CLOSE COLLECTIONS WHEN CLICKING OUTSIDE                   */
+  /* ========================================================= */
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+
+      if (!target) return;
+
+      if (!target.closest("[data-collections-dropdown]")) {
+        setCollectionsOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, []);
+
+  /* ========================================================= */
+  /* ESCAPE KEY                                                */
+  /* ========================================================= */
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setCollectionsOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  /* ========================================================= */
+  /* RENDER                                                    */
+  /* ========================================================= */
 
   return (
     <header
-  className={`
-    fixed
-    inset-x-0
-    top-0
-    z-[1000]
-    transition-transform
-    duration-500
-    ease-[cubic-bezier(0.22,1,0.36,1)]
-    ${
-      showNavbar
-        ? "translate-y-0"
-        : "-translate-y-full"
-    }
-  `}
->
-  {/* ================================================= */}
-  {/* TOP ANNOUNCEMENT MARQUEE                         */}
-  {/* ================================================= */}
-
-  <div
-    className="
-      h-[39px]
-      w-full
-      overflow-hidden
-      border-b
-      border-[#D0B27A]/30
-      bg-[#171512]
-    "
-  >
-    <div
-      className="
-        flex
-        h-full
-        w-max
-        animate-navbar-marquee
-        items-center
-        whitespace-nowrap
-      "
+      className={`
+        fixed
+        inset-x-0
+        top-0
+        z-[9999]
+        transition-transform
+        duration-500
+        ease-[cubic-bezier(0.22,1,0.36,1)]
+        ${showNavbar ? "translate-y-0" : "-translate-y-full"}
+      `}
     >
-      {/* FIRST SET */}
+      {/* ===================================================== */}
+      {/* ANNOUNCEMENT BAR                                      */}
+      {/* ===================================================== */}
 
       <div
         className="
-          flex
-          shrink-0
-          items-center
-          gap-10
-          pr-10
-          text-[10px]
-          font-medium
-          uppercase
-          tracking-[0.22em]
-          text-[#E3D7C2]
-          sm:text-[11px]
+          h-[39px]
+          w-full
+          overflow-hidden
+          border-b
+          border-[#D0B27A]/30
+          bg-[#171512]
         "
       >
-        <span>
-          Complimentary White-Glove Concierge Delivery & Interior Consultation on Orders Over $5,000
-        </span>
-
-        <span className="text-[#D0B27A]">
-          ◆
-        </span>
-
-        <span>
-          Use Code 'ROYAL10' for Privileged Inaugural 10% Savings
-        </span>
-
-        <span className="text-[#D0B27A]">
-          ◆
-        </span>
-
-        <span>
-          Bespoke Furniture Crafted for Extraordinary Spaces
-        </span>
-
-        <span className="text-[#D0B27A]">
-          ◆
-        </span>
-
-        <span>
-          NIRA Furniture — Made in India
-        </span>
-
-        <span className="text-[#D0B27A]">
-          ◆
-        </span>
+        <div
+          className="
+            flex
+            h-full
+            w-max
+            animate-navbar-marquee
+            items-center
+            whitespace-nowrap
+          "
+        >
+          <AnnouncementSet />
+          <AnnouncementSet leadingDiamond />
+        </div>
       </div>
 
-      {/* SECOND SET */}
+      {/* ===================================================== */}
+      {/* MAIN NAVBAR                                           */}
+      {/* ===================================================== */}
 
-      <div
+      <nav
         className="
+          relative
+          mx-auto
           flex
-          shrink-0
+          h-[72px]
+          w-full
           items-center
-          gap-10
-          pr-10
-          text-[10px]
-          font-medium
-          uppercase
-          tracking-[0.22em]
-          text-[#E3D7C2]
-          sm:text-[11px]
+          border-b
+          border-black/10
+          bg-[#eeeae4]/95
+          px-4
+          backdrop-blur-md
+          sm:px-5
+          md:px-7
+          lg:px-9
+          xl:px-10
         "
       >
-        <span>
-          Complimentary White-Glove Concierge Delivery & Interior Consultation on Orders Over $5,000
-        </span>
+        {/* =================================================== */}
+        {/* LOGO                                                */}
+        {/* =================================================== */}
 
-        <span className="text-[#D0B27A]">
-          ◆
-        </span>
+        <Link
+          href="/"
+          aria-label="NIRA Furniture Home"
+          className="
+            flex
+            shrink-0
+            items-center
+            transition-opacity
+            duration-300
+            hover:opacity-70
+          "
+        >
+          <Image
+            src={LOGO_URL}
+            alt="NIRA Furniture"
+            width={110}
+            height={50}
+            priority
+            className="
+              h-auto
+              w-[82px]
+              object-contain
+              sm:w-[88px]
+              md:w-[94px]
+              lg:w-[96px]
+            "
+          />
+        </Link>
 
-        <span>
-          Use Code 'ROYAL10' for Privileged Inaugural 10% Savings
-        </span>
+        {/* =================================================== */}
+        {/* DESKTOP NAVIGATION                                  */}
+        {/* =================================================== */}
 
-        <span className="text-[#D0B27A]">
-          ◆
-        </span>
+        <div
+          className="
+            ml-auto
+            hidden
+            items-center
+            gap-5
+            font-['Bodoni_Moda']
+            text-[17px]
+            font-medium
+            xl:flex
+            xl:gap-8
+            2xl:gap-12
+          "
+        >
+          {/* HOME */}
+          <NavItem href="/" label="Home" />
 
-        <span>
-          Bespoke Furniture Crafted for Extraordinary Spaces
-        </span>
+          {/* ================================================= */}
+          {/* COLLECTIONS                                       */}
+          {/* ================================================= */}
 
-        <span className="text-[#D0B27A]">
-          ◆
-        </span>
+          <div
+            className="relative"
+            data-collections-dropdown
+          >
+            <div className="flex items-center">
+              {/* COLLECTIONS TEXT */}
 
-        <span>
-          NIRA Furniture — Made in India
-        </span>
+              <Link
+                href="/collections"
+                onClick={() => setCollectionsOpen(false)}
+                className="
+                  group
+                  relative
+                  whitespace-nowrap
+                  py-2
+                  font-['Bodoni_Moda']
+                  font-medium
+                  uppercase
+                  tracking-[0.08em]
+                  text-[#282828]
+                  transition-colors
+                  duration-300
+                  hover:text-black
+                "
+              >
+                Collections
 
-        <span className="text-[#D0B27A]">
-          ◆
-        </span>
-      </div>
-    </div>
-  </div>
+                <span
+                  className="
+                    absolute
+                    bottom-0
+                    left-0
+                    h-px
+                    w-0
+                    bg-black
+                    transition-all
+                    duration-300
+                    ease-out
+                    group-hover:w-full
+                  "
+                />
+              </Link>
 
+              {/* ============================================= */}
+              {/* CLICKABLE ARROW                               */}
+              {/* ============================================= */}
 
-  {/* ================================================= */}
-  {/* MAIN NAVBAR                                      */}
-  {/* ================================================= */}
+              <button
+                type="button"
+                aria-label={
+                  collectionsOpen
+                    ? "Close Collections menu"
+                    : "Open Collections menu"
+                }
+                aria-haspopup="menu"
+                aria-expanded={collectionsOpen}
+                aria-controls={dropdownMenuId}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
 
-  <nav
-    className="
-      mx-auto
-      flex
-      h-[58px]
-      w-full
-      items-center
-      border-b
-      border-black/10
-      bg-[#eeeae4]/95
-      px-5
-      backdrop-blur-md
-      md:h-[58px]
-      md:px-7
-      lg:px-9
-      xl:px-10
-    "
-  >
+                  setCollectionsOpen((current) => !current);
+                }}
+                className="
+                  ml-2
+                  flex
+                  h-8
+                  w-8
+                  shrink-0
+                  touch-manipulation
+                  cursor-pointer
+                  select-none
+                  items-center
+                  justify-center
+                  rounded-full
+                  border
+                  border-[#B88A2B]/25
+                  bg-transparent
+                  text-[#6F541F]
+                  transition-all
+                  duration-300
+                  hover:border-[#B88A2B]
+                  hover:bg-[#B88A2B]
+                  hover:text-white
+                  active:scale-95
+                "
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden="true"
+                  className={`
+                    pointer-events-none
+                    transition-transform
+                    duration-300
+                    ${
+                      collectionsOpen
+                        ? "rotate-180"
+                        : "rotate-0"
+                    }
+                  `}
+                >
+                  <path
+                    d="M5 7.5L10 12.5L15 7.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
 
-    {/* ================================================= */}
-    {/* LEFT — LOGO + BRAND                              */}
-    {/* ================================================= */}
+            {/* ================================================= */}
+            {/* COLLECTIONS DROPDOWN                              */}
+            {/* ================================================= */}
 
-    <Link
-      href="/"
-      aria-label="NIRA Haute Living"
-      className="
-        flex
-        shrink-0
-        items-center
-        gap-5
-        transition-opacity
-        duration-300
-        hover:opacity-70
-      "
-    >
-      <Image
-        src={LOGO_URL}
-        alt="NIRA"
-        width={95}
-        height={45}
-        priority
-        className="
-          h-auto
-          w-[70px]
-          object-contain
-          md:w-[78px]
-          lg:w-[86px]
-        "
-      />
+            {collectionsOpen && (
+              <div
+                className="
+                  absolute
+                  left-1/2
+                  top-full
+                  z-[99999]
+                  w-[280px]
+                  -translate-x-1/2
+                  pt-3
+                "
+              >
+                <div
+                  id={dropdownMenuId}
+                  className="
+                    overflow-hidden
+                    border
+                    border-[#B88A2B]/20
+                    bg-[#F8F5ED]
+                    shadow-[0_25px_70px_rgba(36,31,24,0.20)]
+                  "
+                  role="menu"
+                >
+                  {/* DROPDOWN HEADER */}
 
-      <span
-        className="
-          hidden
-          font-serif
-          text-[18px]
-          tracking-[0.02em]
-          text-[#171717]
-          sm:block
-          md:text-[19px]
-          lg:text-[20px]
-        "
-      >
-        NIRA HAUTE LIVING
-      </span>
-    </Link>
+                  <div
+                    className="
+                      border-b
+                      border-[#241F18]/10
+                      px-5
+                      py-4
+                    "
+                  >
+                    <p
+                      className="
+                        font-sans
+                        text-[9px]
+                        font-medium
+                        uppercase
+                        tracking-[0.22em]
+                        text-[#8A6418]
+                      "
+                    >
+                      NIRA Furniture
+                    </p>
 
+                    <p
+                      className="
+                        mt-1
+                        font-['Bodoni_Moda']
+                        text-[19px]
+                        text-[#241F18]
+                      "
+                    >
+                      Collections
+                    </p>
+                  </div>
 
-    {/* ================================================= */}
-    {/* CENTER — NAVIGATION                              */}
-    {/* ================================================= */}
+                  {/* COLLECTION ITEMS */}
 
- <div
-  className="
-    ml-auto
-    hidden
-    items-center
-    gap-12
-    lg:flex
-    xl:gap-16
-    text-[15px]
-    xl:text-[14px]
-  "
->
-  <NavItem
-    href="/"
-    label="Home"
-  />
+                  {collectionItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      role="menuitem"
+                      onClick={() => setCollectionsOpen(false)}
+                      className="
+                        group
+                        flex
+                        min-h-[52px]
+                        items-center
+                        justify-between
+                        border-b
+                        border-[#241F18]/[0.07]
+                        px-5
+                        transition-all
+                        duration-200
+                        last:border-b-0
+                        hover:bg-[#171512]
+                      "
+                    >
+                      <span
+                        className="
+                          font-['Bodoni_Moda']
+                          text-[15px]
+                          tracking-[0.03em]
+                          text-[#40382E]
+                          transition-colors
+                          duration-200
+                          group-hover:text-[#D0B27A]
+                        "
+                      >
+                        {item.label}
+                      </span>
 
-  <NavItem
-    href="/collections"
-    label="Collections"
-  />
+                      <span
+                        className="
+                          text-[13px]
+                          text-[#B88A2B]/50
+                          transition-all
+                          duration-200
+                          group-hover:translate-x-1
+                          group-hover:text-[#D0B27A]
+                        "
+                      >
+                        →
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
-  <NavItem
-    href="/about"
-    label="About Atelier"
-  />
+          {/* ABOUT */}
 
-  <NavItem
-    href="/contact"
-    label="Contact"
-  />
+          <NavItem
+            href="/about"
+            label="About"
+          />
 
-    <NavItem
-    href="/enquiry"
-    label="Enquiry"
-  />
-</div>
+          {/* CONTACT */}
 
+          <NavItem
+            href="/contact"
+            label="Contact"
+          />
+        </div>
 
-    {/* ================================================= */}
-    {/* RIGHT — SEARCH / WISHLIST / BAG / ACCOUNT        */}
-    {/* ================================================= */}
+        {/* =================================================== */}
+        {/* SEARCH / ENQUIRE / MOBILE                           */}
+        {/* =================================================== */}
 
-    <div
-      className="
-        ml-7
-        flex
-        shrink-0
-        items-center
-        text-[#181818]
-        md:ml-9
-        lg:ml-10
-      "
-    >
-      <NavbarClient
-        searchItems={searchItems}
-      />
-    </div>
+        <div
+          className="
+            ml-auto
+            flex
+            shrink-0
+            items-center
+            gap-2
+            text-[#181818]
+            md:ml-5
+            xl:ml-8
+          "
+        >
+          {/* BUYER / USER LOGIN */}
+          <Link
+            href="/account"
+            aria-label="Buyer login"
+            className="
+              flex
+              h-10
+              w-10
+              shrink-0
+              items-center
+              justify-center
+              border
+              border-[#B88A2B]/25
+              bg-[#FBF9F3]
+              transition-all
+              duration-300
+              hover:border-[#B88A2B]
+              hover:bg-[#B88A2B]/10
+              active:scale-[0.96]
+              sm:h-11
+              sm:w-11
+            "
+          >
+            <Image
+              src="/profile.png"
+              alt="User login"
+              width={22}
+              height={22}
+              className="h-[20px] w-[20px] object-contain sm:h-[21px] sm:w-[21px]"
+            />
+          </Link>
 
-
-    {/* ================================================= */}
-    {/* MOBILE MENU                                       */}
-    {/* ================================================= */}
-
-    <button
-      type="button"
-      aria-label="Open menu"
-      className="
-        ml-4
-        flex
-        h-9
-        w-9
-        items-center
-        justify-center
-        text-[#171717]
-        lg:hidden
-      "
-    >
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.4"
-      >
-        <path d="M4 7h16M4 12h16M4 17h16" />
-      </svg>
-    </button>
-
-  </nav>
-</header>
+          <NavbarClient searchItems={searchItems} />
+        </div>
+      </nav>
+    </header>
   );
 }
 
+/* =========================================================== */
+/* ANNOUNCEMENT SET                                            */
+/* =========================================================== */
 
-/* ========================================================= */
-/* NAVIGATION ITEM                                           */
-/* ========================================================= */
+function AnnouncementSet({
+  leadingDiamond = false,
+}: {
+  leadingDiamond?: boolean;
+}) {
+  return (
+    <div
+      className="
+        flex
+        shrink-0
+        items-center
+        gap-10
+        pr-10
+        font-sans
+        text-[10px]
+        font-medium
+        uppercase
+        tracking-[0.22em]
+        text-[#E3D7C2]
+        sm:text-[11px]
+      "
+    >
+      {leadingDiamond && (
+        <span className="text-[#D0B27A]">
+          ◆
+        </span>
+      )}
+
+      <span>
+        Complimentary White-Glove Concierge Delivery &amp;
+        Interior Consultation on Orders Over $5,000
+      </span>
+
+      <span className="text-[#D0B27A]">
+        ◆
+      </span>
+
+      <span>
+        Use Code &apos;ROYAL10&apos; for Privileged
+        Inaugural 10% Savings
+      </span>
+
+      <span className="text-[#D0B27A]">
+        ◆
+      </span>
+
+      <span>
+        Bespoke Furniture Crafted for Extraordinary Spaces
+      </span>
+
+      <span className="text-[#D0B27A]">
+        ◆
+      </span>
+
+      <span>
+        NIRA Furniture — Made in India
+      </span>
+
+      <span className="text-[#D0B27A]">
+        ◆
+      </span>
+    </div>
+  );
+}
+
+/* =========================================================== */
+/* NAV ITEM                                                    */
+/* =========================================================== */
 
 function NavItem({
   href,
@@ -383,11 +650,10 @@ function NavItem({
         relative
         whitespace-nowrap
         py-2
-        font-sans
-        text-[11px]
-        font-normal
+        font-['Bodoni_Moda']
+        font-medium
         uppercase
-        tracking-[0.12em]
+        tracking-[0.08em]
         text-[#282828]
         transition-colors
         duration-300
@@ -396,7 +662,6 @@ function NavItem({
     >
       {label}
 
-      {/* Elegant underline */}
       <span
         className="
           absolute

@@ -1,9 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, Ruler, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Ruler,
+  ShieldCheck,
+  ShoppingBag,
+} from "lucide-react";
 import { notFound } from "next/navigation";
 
-import { products } from "@/data/products";
+import { createClient } from "@/lib/supabase/server";
+
+/*
+ * =========================================================
+ * DYNAMIC PRODUCT PAGE
+ * =========================================================
+ */
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const dynamicParams = true;
 
 type PageProps = {
   params: Promise<{
@@ -11,61 +28,374 @@ type PageProps = {
   }>;
 };
 
-export async function generateStaticParams() {
-  return products
-    .filter((product) => product.active)
-    .map((product) => ({
-      slug: product.slug,
-    }));
+type Category = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+type Product = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  short_description: string | null;
+  price: number | string | null;
+  financing: string | null;
+  material: string | null;
+  dimensions: string | null;
+  weight: string | null;
+  stock: number | null;
+  status: string;
+  featured: boolean;
+  new_arrival: boolean;
+  main_image_url: string | null;
+  category_id: string | null;
+
+  categories:
+    | Category
+    | Category[]
+    | null;
+};
+
+type ProductImage = {
+  id: string;
+  image_url: string;
+  sort_order: number;
+};
+
+type ProductWithImages = Product & {
+  product_images: ProductImage[] | null;
+};
+
+/*
+ * =========================================================
+ * CATEGORY HELPER
+ * =========================================================
+ */
+
+function getCategory(
+  product: Product,
+): Category | null {
+  if (Array.isArray(product.categories)) {
+    return product.categories[0] || null;
+  }
+
+  return product.categories;
 }
 
-export async function generateMetadata({ params }: PageProps) {
+/*
+ * =========================================================
+ * DIMENSIONS HELPER
+ * =========================================================
+ */
+
+function getDimensions(
+  dimensionText: string | null,
+) {
+  if (!dimensionText) {
+    return {
+      width: "",
+      depth: "",
+      height: "",
+    };
+  }
+
+  /*
+   * Supports:
+   *
+   * W 240cm × D 115cm × H 78cm
+   * 240 × 115 × 78 cm
+   * 240cm x 115cm x 78cm
+   */
+
+  const matches = dimensionText.match(
+    /(?:W\s*)?([\d.]+)\s*(?:cm|mm|in|")?\s*[×xX]\s*(?:D\s*)?([\d.]+)\s*(?:cm|mm|in|")?\s*[×xX]\s*(?:H\s*)?([\d.]+)\s*(?:cm|mm|in|")?/,
+  );
+
+  if (!matches) {
+    return {
+      width: dimensionText,
+      depth: "",
+      height: "",
+    };
+  }
+
+  const unit =
+    dimensionText.match(
+      /(cm|mm|in|")/i,
+    )?.[1] || "";
+
+  return {
+    width: `${matches[1]}${unit}`,
+    depth: `${matches[2]}${unit}`,
+    height: `${matches[3]}${unit}`,
+  };
+}
+
+/*
+ * =========================================================
+ * GET PRODUCT
+ * =========================================================
+ */
+
+async function getProduct(slug: string) {
+  const supabase = await createClient();
+
+  const decodedSlug =
+    decodeURIComponent(slug).trim();
+
+  console.log(
+    "Looking for product:",
+    decodedSlug,
+  );
+
+  const {
+    data: product,
+    error,
+  } = await supabase
+    .from("products")
+    .select(`
+      id,
+      name,
+      slug,
+      description,
+      short_description,
+      price,
+      financing,
+      material,
+      dimensions,
+      weight,
+      stock,
+      status,
+      featured,
+      new_arrival,
+      main_image_url,
+      category_id,
+      categories (
+        id,
+        name,
+        slug
+      ),
+      product_images (
+        id,
+        image_url,
+        sort_order
+      )
+    `)
+    .eq("slug", decodedSlug)
+    .maybeSingle();
+
+  if (error) {
+    console.error(
+      "Supabase product error:",
+      error,
+    );
+
+    return null;
+  }
+
+  if (!product) {
+    console.error(
+      "Product not found:",
+      decodedSlug,
+    );
+
+    return null;
+  }
+
+  const formattedProduct =
+    product as ProductWithImages;
+
+  if (formattedProduct.product_images) {
+    formattedProduct.product_images.sort(
+      (a, b) =>
+        (a.sort_order ?? 0) -
+        (b.sort_order ?? 0),
+    );
+  }
+
+  return formattedProduct;
+}
+
+/*
+ * =========================================================
+ * METADATA
+ * =========================================================
+ */
+
+export async function generateMetadata({
+  params,
+}: PageProps) {
   const { slug } = await params;
 
-  const product = products.find(
-    (item) => item.slug === slug && item.active
-  );
+  const product = await getProduct(slug);
 
   if (!product) {
     return {
       title: "Product | NIRA Furniture",
+      description:
+        "Explore premium furniture from NIRA Furniture.",
     };
   }
 
   return {
-    title:
-      product.seoTitle ||
-      `${product.name} | NIRA Furniture`,
+    title: `${product.name} | NIRA Furniture`,
     description:
-      product.seoDescription ||
-      product.shortDescription,
+      product.short_description ||
+      product.description ||
+      `Discover ${product.name} from NIRA Furniture.`,
   };
 }
+
+/*
+ * =========================================================
+ * PRODUCT PAGE
+ * =========================================================
+ */
 
 export default async function ProductPage({
   params,
 }: PageProps) {
   const { slug } = await params;
 
-  const product = products.find(
-    (item) => item.slug === slug && item.active
-  );
+  const product = await getProduct(slug);
 
   if (!product) {
     notFound();
   }
 
-  const relatedProducts = products
-    .filter(
-      (item) =>
-        item.active &&
-        item.slug !== product.slug &&
-        item.category === product.category
-    )
-    .slice(0, 4);
+  const category = getCategory(product);
 
-  const mainImage =
-    product.images?.[0] || "/hero/nira-hero.jpg";
+  /*
+   * =======================================================
+   * IMAGES
+   * =======================================================
+   */
+
+  const galleryImages =
+    product.product_images || [];
+
+  const allImages = [
+    ...(product.main_image_url
+      ? [product.main_image_url]
+      : []),
+
+    ...galleryImages
+      .map((image) => image.image_url)
+      .filter(
+        (image) =>
+          image !== product.main_image_url,
+      ),
+  ];
+
+  const images =
+    allImages.length > 0
+      ? allImages
+      : ["/hero/nira-hero.jpg"];
+
+  const mainImage = images[0];
+
+  /*
+   * =======================================================
+   * RELATED PRODUCTS
+   * =======================================================
+   */
+
+  let relatedProducts: Product[] = [];
+
+  if (product.category_id) {
+    const supabase = await createClient();
+
+    const {
+      data,
+      error,
+    } = await supabase
+      .from("products")
+      .select(`
+        id,
+        name,
+        slug,
+        description,
+        short_description,
+        price,
+        financing,
+        material,
+        dimensions,
+        weight,
+        stock,
+        status,
+        featured,
+        new_arrival,
+        main_image_url,
+        category_id,
+        categories (
+          id,
+          name,
+          slug
+        )
+      `)
+      .eq("status", "active")
+      .eq(
+        "category_id",
+        product.category_id,
+      )
+      .neq("id", product.id)
+      .order("featured", {
+        ascending: false,
+      })
+      .order("created_at", {
+        ascending: false,
+      })
+      .limit(4);
+
+    if (!error && data) {
+      relatedProducts =
+        data as Product[];
+    }
+  }
+
+  /*
+   * =======================================================
+   * DIMENSIONS
+   * =======================================================
+   */
+
+  const dimensions = getDimensions(
+    product.dimensions,
+  );
+
+  /*
+   * =======================================================
+   * CATEGORY URL
+   * =======================================================
+   */
+
+  const collectionUrl = category
+    ? `/collections/${category.slug}`
+    : "/collections";
+
+  /*
+   * =======================================================
+   * BUY NOW URL
+   *
+   * Sends this exact product to checkout.
+   * The checkout page/API still validates the
+   * actual product price and stock from Supabase.
+   * =======================================================
+   */
+
+  const buyNowUrl =
+    `/checkout?product=${encodeURIComponent(
+      product.slug,
+    )}`;
+
+  const isAvailable =
+    product.status === "active" &&
+    product.price !== null &&
+    Number(product.price) > 0 &&
+    (product.stock === null ||
+      product.stock > 0);
 
   return (
     <main className="min-h-screen bg-[#FAF8F2] text-[#241F18]">
@@ -75,15 +405,15 @@ export default async function ProductPage({
       {/* ================================================= */}
 
       <section className="border-b border-[#B8860B]/15 pt-[90px]">
-
         <div className="mx-auto max-w-[1480px] px-6 py-10 sm:px-10 lg:px-16 lg:py-16">
 
-          {/* Breadcrumb */}
-          <div className="mb-10 flex flex-wrap items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.17em] text-[#8A8174]">
+          {/* BREADCRUMB */}
+
+          <div className="mb-10 flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.17em] text-[#8A8174]">
 
             <Link
               href="/"
-              className="hover:text-[#B8860B]"
+              className="transition-colors hover:text-[#B8860B]"
             >
               Home
             </Link>
@@ -91,14 +421,11 @@ export default async function ProductPage({
             <span>/</span>
 
             <Link
-              href={
-                product.category === "Outdoor Furniture"
-                  ? "/outdoor-furniture"
-                  : "/indoor-furniture"
-              }
-              className="hover:text-[#B8860B]"
+              href={collectionUrl}
+              className="transition-colors hover:text-[#B8860B]"
             >
-              {product.category}
+              {category?.name ||
+                "Collections"}
             </Link>
 
             <span>/</span>
@@ -109,8 +436,8 @@ export default async function ProductPage({
 
           </div>
 
+          {/* MAIN GRID */}
 
-          {/* Main Grid */}
           <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 xl:gap-20">
 
             {/* ================================================= */}
@@ -123,55 +450,68 @@ export default async function ProductPage({
 
                 <Image
                   src={mainImage}
-                  alt={
-                    product.altText ||
-                    product.name
-                  }
+                  alt={product.name}
                   fill
                   priority
+                  unoptimized
                   sizes="(max-width: 1024px) 100vw, 60vw"
                   className="object-cover"
                 />
 
                 {product.featured && (
                   <div className="absolute left-5 top-5 border border-[#B8860B]/40 bg-[#FAF8F2]/90 px-4 py-2 backdrop-blur-sm">
-                    <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#8A5F08]">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8A5F08]">
                       Featured Collection
+                    </span>
+                  </div>
+                )}
+
+                {product.new_arrival && (
+                  <div className="absolute right-5 top-5 border border-[#B8860B]/40 bg-[#FAF8F2]/90 px-4 py-2 backdrop-blur-sm">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8A5F08]">
+                      New Arrival
                     </span>
                   </div>
                 )}
 
               </div>
 
+              {/* IMAGE THUMBNAILS */}
 
-              {/* Image thumbnails */}
-              {product.images &&
-                product.images.length > 1 && (
-                  <div className="mt-4 grid grid-cols-4 gap-3">
-                    {product.images.map(
-                      (image, index) => (
+              {images.length > 1 && (
+                <div className="mt-4 grid grid-cols-4 gap-3">
+
+                  {images
+                    .slice(0, 8)
+                    .map(
+                      (
+                        image,
+                        index,
+                      ) => (
                         <div
                           key={`${image}-${index}`}
                           className="relative aspect-square overflow-hidden border border-[#241F18]/10 bg-[#F1EDE3]"
                         >
+
                           <Image
                             src={image}
-                            alt={
-                              product.altText ||
-                              `${product.name} view ${index + 1}`
-                            }
+                            alt={`${product.name} view ${
+                              index + 1
+                            }`}
                             fill
+                            unoptimized
                             sizes="150px"
                             className="object-cover"
                           />
+
                         </div>
-                      )
+                      ),
                     )}
-                  </div>
-                )}
+
+                </div>
+              )}
 
             </div>
-
 
             {/* ================================================= */}
             {/* PRODUCT INFORMATION */}
@@ -179,241 +519,326 @@ export default async function ProductPage({
 
             <div className="flex flex-col justify-center">
 
-              {/* Eyebrow */}
+              {/* EYEBROW */}
+
               <div className="mb-5 flex items-center gap-4">
 
                 <span className="h-px w-12 bg-[#B8860B]" />
 
-                <span className="text-[9px] font-bold uppercase tracking-[0.27em] text-[#B8860B]">
+                <span className="text-[11px] font-bold uppercase tracking-[0.27em] text-[#B8860B]">
                   NIRA Furniture
                 </span>
 
               </div>
 
+              {/* PRODUCT NAME */}
 
-              {/* Product Name */}
-              <h1 className="max-w-2xl font-serif text-4xl font-normal leading-[1.05] tracking-[-0.025em] sm:text-5xl lg:text-6xl">
+              <h1 className="max-w-2xl font-serif text-4xl font-semibold leading-[1.05] tracking-[-0.025em] sm:text-5xl lg:text-6xl">
                 {product.name}
               </h1>
 
+              {/* CATEGORY */}
 
-              {/* Category */}
-              {product.subcategory && (
-                <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8A8174]">
-                  {product.subcategory}
+              {category && (
+                <Link
+                  href={collectionUrl}
+                  className="mt-4 inline-block w-fit text-[11px] font-bold uppercase tracking-[0.2em] text-[#8A8174] transition-colors hover:text-[#B8860B]"
+                >
+                  {category.name}
+                </Link>
+              )}
+
+              {/* DESCRIPTION */}
+
+              {product.description && (
+                <p className="mt-7 max-w-xl text-[15px] font-medium leading-7 text-[#756B5B]">
+                  {product.description}
                 </p>
               )}
 
+              {/* SHORT DESCRIPTION */}
 
-              {/* Description */}
-              <p className="mt-7 max-w-xl text-sm leading-7 text-[#756B5B]">
-                {product.description}
-              </p>
-
-
-              {/* Short description */}
-              {product.shortDescription && (
-                <p className="mt-4 text-[12px] leading-6 text-[#8A8174]">
-                  {product.shortDescription}
+              {product.short_description && (
+                <p className="mt-4 text-[13px] font-medium leading-6 text-[#8A8174]">
+                  {product.short_description}
                 </p>
               )}
 
+              {/* PRICE */}
 
-              {/* Divider */}
-              <div className="my-8 h-px bg-[#241F18]/10" />
+              <div className="mt-7">
 
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#B8860B]">
+                  Acquisition Value
+                </p>
 
-              {/* Product Features */}
-              <div className="grid grid-cols-2 gap-x-8 gap-y-7">
+                <p className="mt-2 text-3xl font-semibold text-[#241F18]">
+                  {product.price !== null
+                    ? `₹${Number(
+                        product.price,
+                      ).toLocaleString(
+                        "en-IN",
+                        {
+                          minimumFractionDigits: 2,
+                        },
+                      )}`
+                    : "Price on Request"}
+                </p>
 
-                {/* Materials */}
-                {product.materials &&
-                  product.materials.length > 0 && (
-                    <InfoBlock title="Materials">
-                      {product.materials.map(
-                        (material) => (
-                          <p
-                            key={material}
-                            className="text-[11px] leading-5 text-[#5D5549]"
-                          >
-                            {material}
-                          </p>
-                        )
-                      )}
-                    </InfoBlock>
-                  )}
-
-
-                {/* Fabrics */}
-                {product.fabrics &&
-                  product.fabrics.length > 0 && (
-                    <InfoBlock title="Fabrics">
-                      {product.fabrics.map(
-                        (fabric) => (
-                          <p
-                            key={fabric}
-                            className="text-[11px] leading-5 text-[#5D5549]"
-                          >
-                            {fabric}
-                          </p>
-                        )
-                      )}
-                    </InfoBlock>
-                  )}
-
-
-                {/* Colours */}
-                {product.colors &&
-                  product.colors.length > 0 && (
-                    <InfoBlock title="Colours">
-                      <div className="flex flex-wrap gap-2">
-                        {product.colors.map(
-                          (color) => (
-                            <span
-                              key={color}
-                              className="border border-[#B8860B]/20 bg-white px-2.5 py-1 text-[10px] text-[#5D5549]"
-                            >
-                              {color}
-                            </span>
-                          )
-                        )}
-                      </div>
-                    </InfoBlock>
-                  )}
-
-
-                {/* Dimensions */}
-                {product.dimensions && (
-                  <InfoBlock title="Dimensions">
-                    <div className="space-y-1.5">
-
-                      {product.dimensions.width && (
-                        <p className="flex items-center gap-2 text-[11px] text-[#5D5549]">
-                          <span className="text-[#B8860B]">
-                            W
-                          </span>
-                          {product.dimensions.width}
-                        </p>
-                      )}
-
-                      {product.dimensions.depth && (
-                        <p className="flex items-center gap-2 text-[11px] text-[#5D5549]">
-                          <span className="text-[#B8860B]">
-                            D
-                          </span>
-                          {product.dimensions.depth}
-                        </p>
-                      )}
-
-                      {product.dimensions.height && (
-                        <p className="flex items-center gap-2 text-[11px] text-[#5D5549]">
-                          <span className="text-[#B8860B]">
-                            H
-                          </span>
-                          {product.dimensions.height}
-                        </p>
-                      )}
-
-                    </div>
-                  </InfoBlock>
+                {product.financing && (
+                  <p className="mt-2 text-[12px] font-medium text-[#8A8174]">
+                    {product.financing}
+                  </p>
                 )}
 
               </div>
 
+              {/* DIVIDER */}
 
-              {/* Customization */}
-              {product.customization &&
-                product.customization.length > 0 && (
-                  <div className="mt-8 border-t border-[#241F18]/10 pt-7">
+              <div className="my-8 h-px bg-[#241F18]/10" />
 
-                    <div className="flex items-center gap-3">
+              {/* PRODUCT FEATURES */}
 
-                      <Ruler
-                        size={17}
-                        className="text-[#B8860B]"
-                      />
+              <div className="grid grid-cols-2 gap-x-8 gap-y-7">
 
-                      <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#40382E]">
-                        Customization Available
-                      </h2>
+                {/* MATERIAL */}
+
+                {product.material && (
+                  <InfoBlock title="Material">
+                    <p className="text-[13px] font-medium leading-6 text-[#5D5549]">
+                      {product.material}
+                    </p>
+                  </InfoBlock>
+                )}
+
+                {/* DIMENSIONS */}
+
+                {product.dimensions && (
+                  <InfoBlock title="Dimensions">
+
+                    <div className="space-y-1.5">
+
+                      {dimensions.width &&
+                      dimensions.depth &&
+                      dimensions.height ? (
+                        <>
+                          <p className="flex items-center gap-2 text-[13px] font-medium text-[#5D5549]">
+                            <span className="font-bold text-[#B8860B]">
+                              W
+                            </span>
+                            {dimensions.width}
+                          </p>
+
+                          <p className="flex items-center gap-2 text-[13px] font-medium text-[#5D5549]">
+                            <span className="font-bold text-[#B8860B]">
+                              D
+                            </span>
+                            {dimensions.depth}
+                          </p>
+
+                          <p className="flex items-center gap-2 text-[13px] font-medium text-[#5D5549]">
+                            <span className="font-bold text-[#B8860B]">
+                              H
+                            </span>
+                            {dimensions.height}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-[13px] font-medium leading-6 text-[#5D5549]">
+                          {product.dimensions}
+                        </p>
+                      )}
 
                     </div>
 
-                    <div className="mt-4 grid grid-cols-2 gap-2">
-                      {product.customization.map(
-                        (option) => (
-                          <div
-                            key={option}
-                            className="flex items-center gap-2 text-[11px] text-[#756B5B]"
-                          >
-                            <Check
-                              size={13}
-                              className="text-[#B8860B]"
-                            />
-                            {option}
-                          </div>
-                        )
-                      )}
+                  </InfoBlock>
+                )}
+
+                {/* WEIGHT */}
+
+                {product.weight && (
+                  <InfoBlock title="Weight">
+                    <p className="text-[13px] font-medium leading-6 text-[#5D5549]">
+                      {product.weight}
+                    </p>
+                  </InfoBlock>
+                )}
+
+                {/* AVAILABILITY */}
+
+                <InfoBlock title="Availability">
+                  <p className="text-[13px] font-medium leading-6 text-[#5D5549]">
+                    {product.stock &&
+                    product.stock > 0
+                      ? `${product.stock} available`
+                      : "Made to Order"}
+                  </p>
+                </InfoBlock>
+
+              </div>
+
+              {/* MATERIAL NOTE */}
+
+              {product.material && (
+                <div className="mt-8 border-t border-[#241F18]/10 pt-7">
+
+                  <div className="flex items-center gap-3">
+
+                    <Ruler
+                      size={18}
+                      className="text-[#B8860B]"
+                    />
+
+                    <h2 className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#40382E]">
+                      Crafted Details
+                    </h2>
+
+                  </div>
+
+                  <div className="mt-5 grid grid-cols-2 gap-4">
+
+                    <div className="flex items-center gap-3 text-[14px] font-semibold text-[#5D5549]">
+                      <Check
+                        size={17}
+                        strokeWidth={2}
+                        className="shrink-0 text-[#B8860B]"
+                      />
+                      <span>
+                        Hand Finished
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-[14px] font-semibold text-[#5D5549]">
+                      <Check
+                        size={17}
+                        strokeWidth={2}
+                        className="shrink-0 text-[#B8860B]"
+                      />
+                      <span>
+                        Made to Order
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-[14px] font-semibold text-[#5D5549]">
+                      <Check
+                        size={17}
+                        strokeWidth={2}
+                        className="shrink-0 text-[#B8860B]"
+                      />
+                      <span>
+                        Premium Materials
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-[14px] font-semibold text-[#5D5549]">
+                      <Check
+                        size={17}
+                        strokeWidth={2}
+                        className="shrink-0 text-[#B8860B]"
+                      />
+                      <span>
+                        NIRA Quality
+                      </span>
                     </div>
 
                   </div>
-                )}
 
+                </div>
+              )}
 
-              {/* Warranty */}
-              <div className="mt-8 flex items-center gap-4 border-y border-[#B8860B]/15 py-5">
+              {/* WARRANTY */}
+
+              <div className="mt-8 flex items-center gap-5 border-y border-[#B8860B]/15 py-6">
 
                 <ShieldCheck
-                  size={22}
-                  strokeWidth={1.3}
-                  className="text-[#B8860B]"
+                  size={28}
+                  strokeWidth={1.8}
+                  className="shrink-0 text-[#B8860B]"
                 />
 
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#40382E]">
+
+                  <p className="text-[13px] font-bold uppercase tracking-[0.2em] text-[#40382E]">
                     Quality Assurance
                   </p>
 
-                  <p className="mt-1 text-[11px] text-[#756B5B]">
-                    Selected outdoor furniture includes a 4-year warranty.
+                  <p className="mt-2 text-[15px] font-semibold leading-6 text-[#756B5B]">
+                    Selected furniture includes a
+                    4-year warranty.
                   </p>
+
                 </div>
 
               </div>
 
-
+              {/* ================================================= */}
               {/* CTA */}
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              {/* ================================================= */}
 
-                <Link
-                  href={`/contact?product=${encodeURIComponent(
-                    product.name
-                  )}`}
-                  className="group inline-flex min-h-14 flex-1 items-center justify-center gap-3 border border-[#B8860B] bg-[#B8860B] px-7 text-[10px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-300 hover:border-[#241F18] hover:bg-[#241F18]"
-                >
-                  Request a Quote
+              <div className="mt-8 flex flex-col gap-3">
 
-                  <ArrowRight
-                    size={15}
-                    className="transition-transform duration-300 group-hover:translate-x-1"
-                  />
-                </Link>
+                {/* BUY NOW */}
 
-                <Link
-                  href="/contact"
-                  className="inline-flex min-h-14 items-center justify-center border border-[#B8860B]/30 bg-white px-7 text-[10px] font-bold uppercase tracking-[0.18em] text-[#5D5549] transition-all duration-300 hover:border-[#B8860B] hover:text-[#B8860B]"
-                >
-                  Contact NIRA
-                </Link>
+                {isAvailable ? (
+                  <Link
+                    href={buyNowUrl}
+                    className="group inline-flex min-h-14 w-full items-center justify-center gap-3 bg-[#241F18] px-7 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-300 hover:bg-[#B8860B]"
+                  >
+                    <ShoppingBag
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+
+                    Buy Now
+
+                    <ArrowRight
+                      size={17}
+                      className="transition-transform duration-300 group-hover:translate-x-1"
+                    />
+                  </Link>
+                ) : (
+                  <div className="inline-flex min-h-14 w-full cursor-not-allowed items-center justify-center gap-3 border border-[#241F18]/10 bg-[#EAE5DB] px-7 text-[12px] font-bold uppercase tracking-[0.18em] text-[#8A8174]">
+                    Currently Unavailable
+                  </div>
+                )}
+
+                {/* SECONDARY ACTIONS */}
+
+                <div className="flex flex-col gap-3 sm:flex-row">
+
+                  {/* REQUEST A QUOTE */}
+
+                  <Link
+                    href={`/quote?product=${product.id}`}
+                    className="group inline-flex min-h-14 flex-1 items-center justify-center gap-3 border border-[#B8860B] bg-[#B8860B] px-7 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-300 hover:border-[#241F18] hover:bg-[#241F18]"
+                  >
+                    Request a Quote
+
+                    <ArrowRight
+                      size={17}
+                      className="transition-transform duration-300 group-hover:translate-x-1"
+                    />
+                  </Link>
+
+                  {/* CONTACT NIRA */}
+
+                  <Link
+                    href="/contact"
+                    className="inline-flex min-h-14 flex-1 items-center justify-center border border-[#B8860B]/30 bg-white px-7 text-[12px] font-bold uppercase tracking-[0.18em] text-[#5D5549] transition-all duration-300 hover:border-[#B8860B] hover:text-[#B8860B]"
+                  >
+                    Contact NIRA
+                  </Link>
+
+                </div>
 
               </div>
 
             </div>
 
           </div>
+
         </div>
       </section>
-
 
       {/* ================================================= */}
       {/* CUSTOMIZATION BANNER */}
@@ -425,36 +850,38 @@ export default async function ProductPage({
 
           <div>
 
-            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#E0B84F]">
+            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#E0B84F]">
               Made For Your Space
             </p>
 
-            <h2 className="mt-3 font-serif text-3xl text-[#FAF8F2] sm:text-4xl">
+            <h2 className="mt-3 font-serif text-3xl font-semibold text-[#FAF8F2] sm:text-4xl">
               Need a custom size or finish?
             </h2>
 
-            <p className="mt-4 max-w-xl text-sm leading-6 text-[#FAF8F2]/60">
-              NIRA can customize dimensions, fabrics, colours,
-              weaving, wood, metal finishes and cushion configurations
-              according to your requirements.
+            <p className="mt-4 max-w-xl text-[15px] font-medium leading-7 text-[#FAF8F2]/70">
+              NIRA can customize dimensions,
+              fabrics, colours, weaving, wood,
+              metal finishes and cushion
+              configurations according to your
+              requirements.
             </p>
 
           </div>
 
           <Link
             href={`/contact?product=${encodeURIComponent(
-              product.name
+              product.name,
             )}`}
-            className="inline-flex min-h-12 items-center justify-center gap-3 border border-[#E0B84F] bg-[#E0B84F] px-7 text-[10px] font-bold uppercase tracking-[0.18em] text-[#241F18] transition-all duration-300 hover:bg-transparent hover:text-[#E0B84F]"
+            className="inline-flex min-h-12 items-center justify-center gap-3 border border-[#E0B84F] bg-[#E0B84F] px-7 text-[11px] font-bold uppercase tracking-[0.18em] text-[#241F18] transition-all duration-300 hover:bg-transparent hover:text-[#E0B84F]"
           >
             Discuss Your Requirements
-            <ArrowRight size={15} />
+
+            <ArrowRight size={16} />
           </Link>
 
         </div>
 
       </section>
-
 
       {/* ================================================= */}
       {/* RELATED PRODUCTS */}
@@ -467,61 +894,57 @@ export default async function ProductPage({
 
             <div>
 
-              <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#B8860B]">
+              <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#B8860B]">
                 You May Also Like
               </p>
 
-              <h2 className="mt-3 font-serif text-3xl sm:text-4xl">
+              <h2 className="mt-3 font-serif text-3xl font-semibold sm:text-4xl">
                 More from NIRA
               </h2>
 
             </div>
 
             <Link
-              href={
-                product.category === "Outdoor Furniture"
-                  ? "/outdoor-furniture"
-                  : "/indoor-furniture"
-              }
-              className="hidden items-center gap-2 text-[9px] font-bold uppercase tracking-[0.18em] text-[#B8860B] sm:flex"
+              href={collectionUrl}
+              className="hidden items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#B8860B] sm:flex"
             >
               View Collection
-              <ArrowRight size={14} />
+
+              <ArrowRight size={15} />
             </Link>
 
           </div>
 
-
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
 
-            {relatedProducts.map((relatedProduct) => (
-              <ProductCardSimple
-                key={relatedProduct.id}
-                product={relatedProduct}
-              />
-            ))}
+            {relatedProducts.map(
+              (relatedProduct) => (
+                <ProductCardSimple
+                  key={relatedProduct.id}
+                  product={relatedProduct}
+                />
+              ),
+            )}
 
           </div>
 
         </section>
       )}
 
+      {/* ================================================= */}
+      {/* BACK */}
+      {/* ================================================= */}
 
-      {/* Back */}
       <div className="border-t border-[#241F18]/10 bg-white">
 
         <div className="mx-auto max-w-[1480px] px-6 py-7 sm:px-10 lg:px-16">
 
           <Link
-            href={
-              product.category === "Outdoor Furniture"
-                ? "/outdoor-furniture"
-                : "/indoor-furniture"
-            }
-            className="group inline-flex items-center gap-3 text-[9px] font-bold uppercase tracking-[0.18em] text-[#756B5B] hover:text-[#B8860B]"
+            href={collectionUrl}
+            className="group inline-flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[#756B5B] hover:text-[#B8860B]"
           >
             <ArrowLeft
-              size={14}
+              size={15}
               className="transition-transform duration-300 group-hover:-translate-x-1"
             />
 
@@ -536,10 +959,11 @@ export default async function ProductPage({
   );
 }
 
-
-/* ========================================================= */
-/* INFO BLOCK                                                  */
-/* ========================================================= */
+/*
+ * =========================================================
+ * INFO BLOCK
+ * =========================================================
+ */
 
 function InfoBlock({
   title,
@@ -550,67 +974,80 @@ function InfoBlock({
 }) {
   return (
     <div>
-      <p className="mb-2 text-[8px] font-bold uppercase tracking-[0.2em] text-[#B8860B]">
+
+      <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#B8860B]">
         {title}
       </p>
 
       {children}
+
     </div>
   );
 }
 
-
-/* ========================================================= */
-/* RELATED PRODUCT CARD                                       */
-/* ========================================================= */
+/*
+ * =========================================================
+ * RELATED PRODUCT CARD
+ * =========================================================
+ */
 
 function ProductCardSimple({
   product,
 }: {
-  product: (typeof products)[number];
+  product: Product;
 }) {
   const image =
-    product.images?.[0] || "/hero/nira-hero.jpg";
+    product.main_image_url ||
+    "/hero/nira-hero.jpg";
+
+  const category = getCategory(product);
 
   return (
     <Link
       href={`/products/${product.slug}`}
       className="group block"
     >
+
       <div className="relative aspect-[4/4.5] overflow-hidden bg-[#F1EDE3]">
 
         <Image
           src={image}
-          alt={product.altText || product.name}
+          alt={product.name}
           fill
+          unoptimized
           sizes="(max-width: 768px) 50vw, 25vw"
           className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
         />
 
-        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-black/35 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/35 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+
       </div>
 
       <div className="pt-4">
 
-        {product.subcategory && (
-          <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-[#B8860B]">
-            {product.subcategory}
+        {category && (
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#B8860B]">
+            {category.name}
           </p>
         )}
 
-        <h3 className="mt-1 font-serif text-xl text-[#241F18]">
+        <h3 className="mt-1 font-serif text-xl font-semibold text-[#241F18]">
           {product.name}
         </h3>
 
-        <span className="mt-2 inline-flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.15em] text-[#8A8174] transition-colors group-hover:text-[#B8860B]">
+        <span className="mt-2 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-[#8A8174] transition-colors group-hover:text-[#B8860B]">
+
           View Details
+
           <ArrowRight
-            size={12}
+            size={13}
             className="transition-transform duration-300 group-hover:translate-x-1"
           />
+
         </span>
 
       </div>
+
     </Link>
   );
 }
