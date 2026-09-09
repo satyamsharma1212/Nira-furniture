@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   ArrowLeft,
+  ArrowRight,
   CheckCircle2,
   Clock3,
   Mail,
@@ -9,8 +10,8 @@ import {
   Package,
   Phone,
   Truck,
-  XCircle,
   User,
+  XCircle,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
@@ -192,12 +193,11 @@ export default async function AdminOrdersPage() {
       redirect("/admin/login");
     }
 
-    const { data: currentAdmin } =
-      await client
-        .from("admin_users")
-        .select("id")
-        .eq("id", currentUser.id)
-        .maybeSingle();
+    const { data: currentAdmin } = await client
+      .from("admin_users")
+      .select("id")
+      .eq("id", currentUser.id)
+      .maybeSingle();
 
     if (!currentAdmin) {
       redirect("/account");
@@ -207,8 +207,7 @@ export default async function AdminOrdersPage() {
       .from("orders")
       .update({
         order_status: status,
-        updated_at:
-          new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })
       .eq("id", orderId);
 
@@ -257,12 +256,11 @@ export default async function AdminOrdersPage() {
       redirect("/admin/login");
     }
 
-    const { data: currentAdmin } =
-      await client
-        .from("admin_users")
-        .select("id")
-        .eq("id", currentUser.id)
-        .maybeSingle();
+    const { data: currentAdmin } = await client
+      .from("admin_users")
+      .select("id")
+      .eq("id", currentUser.id)
+      .maybeSingle();
 
     if (!currentAdmin) {
       redirect("/account");
@@ -272,8 +270,7 @@ export default async function AdminOrdersPage() {
       .from("orders")
       .update({
         payment_status: status,
-        updated_at:
-          new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })
       .eq("id", orderId);
 
@@ -351,10 +348,6 @@ export default async function AdminOrdersPage() {
       ascending: false,
     });
 
-  /* =========================================================
-     ERROR
-  ========================================================= */
-
   if (ordersError) {
     console.error(
       "Admin orders fetch error:",
@@ -368,51 +361,39 @@ export default async function AdminOrdersPage() {
      STATS
   ========================================================= */
 
-  const totalOrders =
-    orderList.length;
+  const totalOrders = orderList.length;
 
-  const pendingOrders =
-    orderList.filter(
+  const pendingOrders = orderList.filter(
+    (order) =>
+      order.order_status === "pending",
+  ).length;
+
+  const processingOrders = orderList.filter(
+    (order) =>
+      [
+        "confirmed",
+        "processing",
+        "packed",
+        "shipped",
+      ].includes(order.order_status),
+  ).length;
+
+  const completedOrders = orderList.filter(
+    (order) =>
+      order.order_status === "delivered",
+  ).length;
+
+  const paidRevenue = orderList
+    .filter(
       (order) =>
-        order.order_status ===
-        "pending",
-    ).length;
-
-  const processingOrders =
-    orderList.filter(
-      (order) =>
-        [
-          "confirmed",
-          "processing",
-          "packed",
-          "shipped",
-        ].includes(
-          order.order_status,
-        ),
-    ).length;
-
-  const completedOrders =
-    orderList.filter(
-      (order) =>
-        order.order_status ===
-        "delivered",
-    ).length;
-
-  const paidRevenue =
-    orderList
-      .filter(
-        (order) =>
-          order.payment_status ===
-          "paid",
-      )
-      .reduce(
-        (sum, order) =>
-          sum +
-          Number(
-            order.total_amount ?? 0,
-          ),
-        0,
-      );
+        order.payment_status === "paid",
+    )
+    .reduce(
+      (sum, order) =>
+        sum +
+        Number(order.total_amount ?? 0),
+      0,
+    );
 
   /* =========================================================
      PAGE
@@ -422,10 +403,7 @@ export default async function AdminOrdersPage() {
     <main className="min-h-screen bg-[#F7F4EE] text-[#171512]">
       <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-12 lg:py-14">
 
-        {/* =====================================================
-            HEADER
-        ====================================================== */}
-
+        {/* HEADER */}
         <div className="mb-10 flex flex-col gap-6 border-b border-[#171512]/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <Link
@@ -475,10 +453,7 @@ export default async function AdminOrdersPage() {
           </div>
         </div>
 
-        {/* =====================================================
-            STATS
-        ====================================================== */}
-
+        {/* STATS */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <StatCard
             label="Total Orders"
@@ -507,10 +482,7 @@ export default async function AdminOrdersPage() {
           />
         </div>
 
-        {/* =====================================================
-            ERROR
-        ====================================================== */}
-
+        {/* ERROR */}
         {ordersError && (
           <div className="mb-8 border border-red-900/10 bg-red-50 px-5 py-4 text-sm font-semibold text-red-700">
             Unable to load orders:
@@ -519,10 +491,7 @@ export default async function AdminOrdersPage() {
           </div>
         )}
 
-        {/* =====================================================
-            EMPTY
-        ====================================================== */}
-
+        {/* EMPTY */}
         {orderList.length === 0 ? (
           <div className="border border-[#171512]/10 bg-white px-6 py-24 text-center">
             <Package
@@ -543,115 +512,143 @@ export default async function AdminOrdersPage() {
         ) : (
           <div className="space-y-6">
             {orderList.map((order) => {
-              const items =
-                Array.isArray(
-                  order.order_items,
-                )
-                  ? order.order_items
-                  : [];
+              const items = Array.isArray(
+                order.order_items,
+              )
+                ? order.order_items
+                : [];
 
-              const itemCount =
-                items.reduce(
-                  (
-                    total: number,
-                    item: {
-                      quantity:
-                        | number
-                        | string
-                        | null;
-                    },
-                  ) =>
-                    total +
-                    Number(
-                      item.quantity ?? 0,
-                    ),
-                  0,
-                );
+              const itemCount = items.reduce(
+                (
+                  total: number,
+                  item: {
+                    quantity:
+                      | number
+                      | string
+                      | null;
+                  },
+                ) =>
+                  total +
+                  Number(item.quantity ?? 0),
+                0,
+              );
 
               return (
                 <article
                   key={order.id}
-                  className="overflow-hidden border border-[#171512]/10 bg-white"
+                  className="
+                    overflow-hidden
+                    border
+                    border-[#171512]/10
+                    bg-white
+                    transition
+                    duration-300
+                    hover:border-[#765A32]/25
+                  "
                 >
                   {/* =================================================
-                      ORDER HEADER
+                      CLICKABLE ORDER HEADER
                   ================================================== */}
 
-                  <div className="flex flex-col gap-5 border-b border-[#171512]/10 bg-[#FBF9F3] px-5 py-6 sm:px-7 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                      <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#765A32]">
-                        Order
-                      </p>
+                  <Link
+                    href={`/admin/orders/${order.id}`}
+                    className="
+                      group
+                      block
+                      border-b
+                      border-[#171512]/10
+                      bg-[#FBF9F3]
+                      px-5
+                      py-6
+                      transition
+                      hover:bg-[#F4EFE6]
+                      sm:px-7
+                    "
+                  >
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                      <div>
+                        <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-[#765A32]">
+                          Order
+                        </p>
 
-                      <h2 className="mt-1 font-serif text-2xl font-semibold">
-                        #{order.order_number}
-                      </h2>
+                        <div className="mt-1 flex items-center gap-3">
+                          <h2 className="font-serif text-2xl font-semibold">
+                            #{order.order_number}
+                          </h2>
 
-                      <p className="mt-2 text-xs font-medium text-[#171512]/40">
-                        {formatDate(order.created_at)}
-                      </p>
-                    </div>
+                          <ArrowRight
+                            size={17}
+                            className="
+                              text-[#765A32]
+                              transition-transform
+                              duration-300
+                              group-hover:translate-x-1
+                            "
+                          />
+                        </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      <span
-                        className={`
-                          inline-flex
-                          items-center
-                          gap-2
-                          rounded-full
-                          border
-                          px-3
-                          py-1.5
-                          font-sans
-                          text-[9px]
-                          font-bold
-                          uppercase
-                          tracking-[0.15em]
-                          ${getOrderStatusClasses(
+                        <p className="mt-2 text-xs font-medium text-[#171512]/40">
+                          {formatDate(order.created_at)}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <span
+                          className={`
+                            inline-flex
+                            items-center
+                            gap-2
+                            rounded-full
+                            border
+                            px-3
+                            py-1.5
+                            font-sans
+                            text-[9px]
+                            font-bold
+                            uppercase
+                            tracking-[0.15em]
+                            ${getOrderStatusClasses(
+                              order.order_status,
+                            )}
+                          `}
+                        >
+                          {getOrderIcon(
                             order.order_status,
                           )}
-                        `}
-                      >
-                        {getOrderIcon(
-                          order.order_status,
-                        )}
 
-                        {formatStatus(
-                          order.order_status,
-                        )}
-                      </span>
+                          {formatStatus(
+                            order.order_status,
+                          )}
+                        </span>
 
-                      <span
-                        className={`
-                          rounded-full
-                          border
-                          px-3
-                          py-1.5
-                          font-sans
-                          text-[9px]
-                          font-bold
-                          uppercase
-                          tracking-[0.15em]
-                          ${getPaymentStatusClasses(
+                        <span
+                          className={`
+                            rounded-full
+                            border
+                            px-3
+                            py-1.5
+                            font-sans
+                            text-[9px]
+                            font-bold
+                            uppercase
+                            tracking-[0.15em]
+                            ${getPaymentStatusClasses(
+                              order.payment_status,
+                            )}
+                          `}
+                        >
+                          Payment:
+                          {" "}
+                          {formatStatus(
                             order.payment_status,
                           )}
-                        `}
-                      >
-                        Payment:
-                        {" "}
-                        {formatStatus(
-                          order.payment_status,
-                        )}
-                      </span>
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
 
-                  {/* =================================================
-                      CUSTOMER
-                  ================================================== */}
-
+                  {/* CUSTOMER + SHIPPING */}
                   <div className="grid gap-0 border-b border-[#171512]/10 lg:grid-cols-2">
-
                     <div className="border-b border-[#171512]/10 p-6 sm:p-7 lg:border-b-0 lg:border-r">
                       <SectionTitle
                         icon={<User size={16} />}
@@ -678,7 +675,6 @@ export default async function AdminOrdersPage() {
                       </div>
                     </div>
 
-                    {/* SHIPPING */}
                     <div className="p-6 sm:p-7">
                       <SectionTitle
                         icon={<MapPin size={16} />}
@@ -727,10 +723,7 @@ export default async function AdminOrdersPage() {
                     </div>
                   </div>
 
-                  {/* =================================================
-                      BILLING
-                  ================================================== */}
-
+                  {/* BILLING + PAYMENT */}
                   <div className="grid gap-0 border-b border-[#171512]/10 lg:grid-cols-2">
                     <div className="border-b border-[#171512]/10 p-6 sm:p-7 lg:border-b-0 lg:border-r">
                       <SectionTitle
@@ -742,9 +735,7 @@ export default async function AdminOrdersPage() {
                         {order.billing_address_line1 ? (
                           <>
                             <p className="font-semibold text-[#171512]">
-                              {
-                                order.customer_name
-                              }
+                              {order.customer_name}
                             </p>
 
                             <p>
@@ -787,7 +778,6 @@ export default async function AdminOrdersPage() {
                       </div>
                     </div>
 
-                    {/* PAYMENT */}
                     <div className="p-6 sm:p-7">
                       <SectionTitle
                         icon={<CheckCircle2 size={16} />}
@@ -822,10 +812,7 @@ export default async function AdminOrdersPage() {
                     </div>
                   </div>
 
-                  {/* =================================================
-                      ITEMS
-                  ================================================== */}
-
+                  {/* PRODUCTS */}
                   <div className="border-b border-[#171512]/10">
                     <div className="px-6 py-5 sm:px-7">
                       <SectionTitle
@@ -881,26 +868,13 @@ export default async function AdminOrdersPage() {
                                 href={`/products/${item.product_slug}`}
                                 className="font-serif text-xl font-semibold text-[#171512] transition hover:text-[#765A32]"
                               >
-                                {
-                                  item.product_name
-                                }
+                                {item.product_name}
                               </Link>
 
                               <p className="mt-1 text-xs text-[#171512]/40">
                                 Quantity:
                                 {" "}
                                 {item.quantity}
-                              </p>
-
-                              <p className="mt-1 text-xs text-[#171512]/40">
-                                Unit price:
-                                {" "}
-                                {formatMoney(
-                                  Number(
-                                    item.unit_price,
-                                  ),
-                                  order.currency,
-                                )}
                               </p>
                             </div>
 
@@ -924,13 +898,8 @@ export default async function AdminOrdersPage() {
                     </div>
                   </div>
 
-                  {/* =================================================
-                      ORDER TOTALS + CONTROLS
-                  ================================================== */}
-
+                  {/* MANAGEMENT + TOTAL */}
                   <div className="grid gap-0 lg:grid-cols-[1fr_360px]">
-
-                    {/* CONTROLS */}
                     <div className="border-b border-[#171512]/10 p-6 sm:p-7 lg:border-b-0 lg:border-r">
                       <SectionTitle
                         icon={<Truck size={16} />}
@@ -938,12 +907,7 @@ export default async function AdminOrdersPage() {
                       />
 
                       <div className="mt-6 grid gap-5 sm:grid-cols-2">
-
-                        <form
-                          action={
-                            updateOrderStatus
-                          }
-                        >
+                        <form action={updateOrderStatus}>
                           <input
                             type="hidden"
                             name="order_id"
@@ -959,18 +923,7 @@ export default async function AdminOrdersPage() {
                             defaultValue={
                               order.order_status
                             }
-                            className="
-                              h-12
-                              w-full
-                              border
-                              border-[#171512]/15
-                              bg-[#FAF8F2]
-                              px-4
-                              text-sm
-                              font-medium
-                              outline-none
-                              focus:border-[#765A32]
-                            "
+                            className="h-12 w-full border border-[#171512]/15 bg-[#FAF8F2] px-4 text-sm font-medium outline-none focus:border-[#765A32]"
                           >
                             {ORDER_STATUSES.map(
                               (status) => (
@@ -988,31 +941,13 @@ export default async function AdminOrdersPage() {
 
                           <button
                             type="submit"
-                            className="
-                              mt-3
-                              w-full
-                              bg-[#171512]
-                              px-5
-                              py-3
-                              font-sans
-                              text-[10px]
-                              font-bold
-                              uppercase
-                              tracking-[0.18em]
-                              text-white
-                              transition
-                              hover:bg-[#765A32]
-                            "
+                            className="mt-3 w-full bg-[#171512] px-5 py-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[#765A32]"
                           >
                             Update Order
                           </button>
                         </form>
 
-                        <form
-                          action={
-                            updatePaymentStatus
-                          }
-                        >
+                        <form action={updatePaymentStatus}>
                           <input
                             type="hidden"
                             name="order_id"
@@ -1028,18 +963,7 @@ export default async function AdminOrdersPage() {
                             defaultValue={
                               order.payment_status
                             }
-                            className="
-                              h-12
-                              w-full
-                              border
-                              border-[#171512]/15
-                              bg-[#FAF8F2]
-                              px-4
-                              text-sm
-                              font-medium
-                              outline-none
-                              focus:border-[#765A32]
-                            "
+                            className="h-12 w-full border border-[#171512]/15 bg-[#FAF8F2] px-4 text-sm font-medium outline-none focus:border-[#765A32]"
                           >
                             {PAYMENT_STATUSES.map(
                               (status) => (
@@ -1057,24 +981,7 @@ export default async function AdminOrdersPage() {
 
                           <button
                             type="submit"
-                            className="
-                              mt-3
-                              w-full
-                              border
-                              border-[#171512]/20
-                              bg-white
-                              px-5
-                              py-3
-                              font-sans
-                              text-[10px]
-                              font-bold
-                              uppercase
-                              tracking-[0.18em]
-                              text-[#171512]
-                              transition
-                              hover:border-[#765A32]
-                              hover:text-[#765A32]
-                            "
+                            className="mt-3 w-full border border-[#171512]/20 bg-white px-5 py-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#171512] transition hover:border-[#765A32] hover:text-[#765A32]"
                           >
                             Update Payment
                           </button>
@@ -1092,11 +999,8 @@ export default async function AdminOrdersPage() {
                             <p className="mt-2 text-sm leading-6 text-[#171512]/60">
                               <span className="font-semibold text-[#171512]">
                                 Customer:
-                              </span>
-                              {" "}
-                              {
-                                order.customer_note
-                              }
+                              </span>{" "}
+                              {order.customer_note}
                             </p>
                           )}
 
@@ -1104,8 +1008,7 @@ export default async function AdminOrdersPage() {
                             <p className="mt-2 text-sm leading-6 text-[#171512]/60">
                               <span className="font-semibold text-[#171512]">
                                 Admin:
-                              </span>
-                              {" "}
+                              </span>{" "}
                               {order.notes}
                             </p>
                           )}
@@ -1113,7 +1016,6 @@ export default async function AdminOrdersPage() {
                       )}
                     </div>
 
-                    {/* TOTALS */}
                     <div className="p-6 sm:p-7">
                       <SectionTitle
                         icon={<Package size={16} />}
@@ -1124,9 +1026,7 @@ export default async function AdminOrdersPage() {
                         <SummaryRow
                           label={`Items (${itemCount})`}
                           value={formatMoney(
-                            Number(
-                              order.subtotal,
-                            ),
+                            Number(order.subtotal),
                             order.currency,
                           )}
                         />
@@ -1196,24 +1096,24 @@ export default async function AdminOrdersPage() {
                     </div>
                   </div>
 
-                  {/* =================================================
-                      FOOTER
-                  ================================================== */}
-
+                  {/* FOOTER */}
                   <div className="flex flex-col gap-3 border-t border-[#171512]/10 bg-[#FBF9F3] px-6 py-4 text-[10px] text-[#171512]/40 sm:flex-row sm:items-center sm:justify-between sm:px-7">
                     <span>
-                      Last updated:
+                      Buyer:
                       {" "}
-                      {formatDate(
-                        order.updated_at,
-                      )}
+                      {order.customer_name}
                     </span>
 
-                    <span>
-                      Buyer ID:
-                      {" "}
-                      {order.user_id}
-                    </span>
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className="group inline-flex items-center gap-2 font-bold uppercase tracking-[0.16em] text-[#765A32] hover:text-[#171512]"
+                    >
+                      Open Complete Order
+                      <ArrowRight
+                        size={13}
+                        className="transition-transform group-hover:translate-x-1"
+                      />
+                    </Link>
                   </div>
                 </article>
               );
@@ -1245,17 +1145,11 @@ function StatCard({
       </p>
 
       <p
-        className={`
-          mt-2
-          font-serif
-          text-2xl
-          font-semibold
-          ${
-            accent
-              ? "text-[#765A32]"
-              : "text-[#171512]"
-          }
-        `}
+        className={`mt-2 font-serif text-2xl font-semibold ${
+          accent
+            ? "text-[#765A32]"
+            : "text-[#171512]"
+        }`}
       >
         {value}
       </p>
