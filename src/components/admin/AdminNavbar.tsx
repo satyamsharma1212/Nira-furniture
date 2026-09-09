@@ -29,6 +29,10 @@ const navItems = [
     name: "Categories",
     href: "/admin/categories",
     icon: Tags,
+  }, {
+    name: "Orders",
+    href: "/admin/orders",
+    icon: Tags,
   },
 ];
 
