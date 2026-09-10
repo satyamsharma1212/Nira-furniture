@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -24,8 +25,7 @@ export default function EnquiryPopup() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#211E1A]/45 px-4 py-6 backdrop-blur-[5px]">
-
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#211E1A]/45 px-2.5 py-3 sm:px-4 sm:py-6 backdrop-blur-[5px]">
       {/* =====================================================
           BACKDROP
       ====================================================== */}
@@ -45,7 +45,8 @@ export default function EnquiryPopup() {
           z-10
           w-full
           max-w-[1040px]
-          overflow-hidden
+          max-h-[92vh]
+          overflow-y-auto
           border
           border-[#211E1A]/10
           bg-[#F4F0E8]
@@ -53,12 +54,10 @@ export default function EnquiryPopup() {
         "
       >
         <div className="grid lg:grid-cols-[0.95fr_1.05fr]">
-
           {/* =================================================
               LEFT — EDITORIAL IMAGE
           ================================================= */}
           <div className="relative hidden min-h-[620px] overflow-hidden lg:block">
-
             <Image
               src="/enquiry-popup2.jpg"
               alt="NIRA Furniture"
@@ -106,8 +105,7 @@ export default function EnquiryPopup() {
           {/* =================================================
               RIGHT — FORM
           ================================================= */}
-          <div className="relative px-6 py-8 sm:px-10 sm:py-11 lg:px-14 lg:py-14">
-
+          <div className="relative px-4 py-5 sm:px-8 sm:py-9 lg:px-14 lg:py-14">
             {/* Close */}
             <button
               type="button"
@@ -115,11 +113,11 @@ export default function EnquiryPopup() {
               onClick={() => setOpen(false)}
               className="
                 absolute
-                right-5
-                top-5
+                right-3
+                top-3
                 flex
-                h-9
-                w-9
+                h-8
+                w-8
                 items-center
                 justify-center
                 border
@@ -130,20 +128,23 @@ export default function EnquiryPopup() {
                 hover:border-[#927344]
                 hover:bg-[#927344]
                 hover:text-white
+                sm:right-5
+                sm:top-5
+                sm:h-9
+                sm:w-9
               "
             >
-              <X size={16} strokeWidth={1.4} />
+              <X size={15} strokeWidth={1.4} />
             </button>
 
             <div className="max-w-md">
-
               {/* Eyebrow */}
-              <p className="text-[9px] font-semibold uppercase tracking-[0.34em] text-[#927344]">
+              <p className="text-[8px] font-semibold uppercase tracking-[0.28em] text-[#927344] sm:text-[9px] sm:tracking-[0.34em]">
                 Start a conversation
               </p>
 
               {/* Heading */}
-              <h3 className="mt-5 font-serif text-4xl leading-[0.98] tracking-[-0.025em] text-[#211E1A] sm:text-5xl">
+              <h3 className="mt-3 font-serif text-3xl leading-[0.98] tracking-[-0.025em] text-[#211E1A] sm:mt-5 sm:text-4xl lg:text-5xl">
                 Let&apos;s create
                 <br />
                 something{" "}
@@ -152,19 +153,19 @@ export default function EnquiryPopup() {
                 </span>
               </h3>
 
-              <p className="mt-5 max-w-sm text-xs leading-6 text-[#746D63]">
+              <p className="mt-3 max-w-sm text-[11px] leading-5 text-[#746D63] sm:mt-5 sm:text-xs sm:leading-6">
                 Share a little about what you are looking for. Our team will
                 get in touch to understand your requirements.
               </p>
 
               {/* Small divider */}
-              <div className="mt-7 h-px w-12 bg-[#927344]" />
+              <div className="mt-5 h-px w-10 bg-[#927344] sm:mt-7 sm:w-12" />
 
               {/* =================================================
                   FORM
               ================================================= */}
               <form
-                className="mt-7 space-y-4"
+                className="mt-5 space-y-3 sm:mt-7 sm:space-y-4"
                 onSubmit={(event) => {
                   event.preventDefault();
 
@@ -186,12 +187,11 @@ export default function EnquiryPopup() {
                   window.location.href = "/enquiry";
                 }}
               >
-
                 {/* Name */}
                 <div>
                   <label
                     htmlFor="enquiry-name"
-                    className="mb-2 block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#756D63]"
+                    className="mb-1.5 block text-[8px] font-semibold uppercase tracking-[0.18em] text-[#756D63] sm:mb-2 sm:text-[9px] sm:tracking-[0.2em]"
                   >
                     Name
                   </label>
@@ -203,12 +203,12 @@ export default function EnquiryPopup() {
                     type="text"
                     placeholder="Your name"
                     className="
-                      h-12
+                      h-10
                       w-full
                       border
                       border-[#211E1A]/10
                       bg-transparent
-                      px-4
+                      px-3
                       text-sm
                       text-[#211E1A]
                       outline-none
@@ -217,6 +217,8 @@ export default function EnquiryPopup() {
                       placeholder:text-[#AAA297]
                       focus:border-[#927344]
                       focus:bg-white/50
+                      sm:h-12
+                      sm:px-4
                     "
                   />
                 </div>
@@ -225,7 +227,7 @@ export default function EnquiryPopup() {
                 <div>
                   <label
                     htmlFor="enquiry-phone"
-                    className="mb-2 block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#756D63]"
+                    className="mb-1.5 block text-[8px] font-semibold uppercase tracking-[0.18em] text-[#756D63] sm:mb-2 sm:text-[9px] sm:tracking-[0.2em]"
                   >
                     Phone
                   </label>
@@ -237,12 +239,12 @@ export default function EnquiryPopup() {
                     type="tel"
                     placeholder="+91"
                     className="
-                      h-12
+                      h-10
                       w-full
                       border
                       border-[#211E1A]/10
                       bg-transparent
-                      px-4
+                      px-3
                       text-sm
                       text-[#211E1A]
                       outline-none
@@ -251,6 +253,8 @@ export default function EnquiryPopup() {
                       placeholder:text-[#AAA297]
                       focus:border-[#927344]
                       focus:bg-white/50
+                      sm:h-12
+                      sm:px-4
                     "
                   />
                 </div>
@@ -259,7 +263,7 @@ export default function EnquiryPopup() {
                 <div>
                   <label
                     htmlFor="enquiry-requirement"
-                    className="mb-2 block text-[9px] font-semibold uppercase tracking-[0.2em] text-[#756D63]"
+                    className="mb-1.5 block text-[8px] font-semibold uppercase tracking-[0.18em] text-[#756D63] sm:mb-2 sm:text-[9px] sm:tracking-[0.2em]"
                   >
                     Your requirement
                   </label>
@@ -268,7 +272,7 @@ export default function EnquiryPopup() {
                     id="enquiry-requirement"
                     required
                     name="requirement"
-                    rows={3}
+                    rows={2}
                     placeholder="Tell us about your furniture or space..."
                     className="
                       w-full
@@ -276,10 +280,10 @@ export default function EnquiryPopup() {
                       border
                       border-[#211E1A]/10
                       bg-transparent
-                      px-4
-                      py-3
+                      px-3
+                      py-2
                       text-sm
-                      leading-6
+                      leading-5
                       text-[#211E1A]
                       outline-none
                       transition-all
@@ -287,6 +291,9 @@ export default function EnquiryPopup() {
                       placeholder:text-[#AAA297]
                       focus:border-[#927344]
                       focus:bg-white/50
+                      sm:px-4
+                      sm:py-3
+                      sm:leading-6
                     "
                   />
                 </div>
@@ -296,35 +303,37 @@ export default function EnquiryPopup() {
                   type="submit"
                   className="
                     group
-                    mt-2
+                    mt-1
                     flex
-                    min-h-13
+                    min-h-11
                     w-full
                     items-center
                     justify-center
-                    gap-4
+                    gap-3
                     bg-[#211E1A]
-                    px-6
-                    text-[9px]
+                    px-4
+                    text-[8px]
                     font-semibold
                     uppercase
-                    tracking-[0.25em]
+                    tracking-[0.2em]
                     text-[#F4F0E8]
                     transition-all
                     duration-500
                     hover:bg-[#927344]
+                    sm:mt-2
+                    sm:min-h-13
+                    sm:gap-4
+                    sm:px-6
+                    sm:text-[9px]
+                    sm:tracking-[0.25em]
                   "
                 >
                   Begin an enquiry
 
                   <ArrowRight
-                    size={14}
+                    size={13}
                     strokeWidth={1.4}
-                    className="
-                      transition-transform
-                      duration-300
-                      group-hover:translate-x-1
-                    "
+                    className="transition-transform duration-300 group-hover:translate-x-1"
                   />
                 </button>
               </form>
@@ -335,20 +344,24 @@ export default function EnquiryPopup() {
                 onClick={() => setOpen(false)}
                 className="
                   group
-                  mt-5
+                  mt-3
                   flex
                   items-center
                   justify-center
-                  gap-3
+                  gap-2
                   text-center
-                  text-[9px]
+                  text-[8px]
                   font-semibold
                   uppercase
-                  tracking-[0.2em]
+                  tracking-[0.16em]
                   text-[#82796D]
                   transition-colors
                   duration-300
                   hover:text-[#927344]
+                  sm:mt-5
+                  sm:gap-3
+                  sm:text-[9px]
+                  sm:tracking-[0.2em]
                 "
               >
                 Prefer a detailed enquiry?
@@ -359,7 +372,30 @@ export default function EnquiryPopup() {
               </Link>
 
               {/* Trust details */}
-              <div className="mt-8 flex flex-wrap justify-center gap-x-5 gap-y-2 border-t border-[#211E1A]/10 pt-6 text-[8px] font-medium uppercase tracking-[0.18em] text-[#9A9287]">
+              <div
+                className="
+                  mt-5
+                  flex
+                  flex-wrap
+                  justify-center
+                  gap-x-3
+                  gap-y-1.5
+                  border-t
+                  border-[#211E1A]/10
+                  pt-4
+                  text-[7px]
+                  font-medium
+                  uppercase
+                  tracking-[0.14em]
+                  text-[#9A9287]
+                  sm:mt-8
+                  sm:gap-x-5
+                  sm:gap-y-2
+                  sm:pt-6
+                  sm:text-[8px]
+                  sm:tracking-[0.18em]
+                "
+              >
                 <span>Made in India</span>
                 <span className="text-[#927344]">•</span>
                 <span>Custom Furniture</span>
@@ -373,7 +409,7 @@ export default function EnquiryPopup() {
         {/* =====================================================
             MOBILE IMAGE STRIP
         ====================================================== */}
-        <div className="relative block h-44 overflow-hidden lg:hidden">
+        <div className="relative block h-28 overflow-hidden sm:h-36 lg:hidden">
           <Image
             src="/enquiry-popup.jpg"
             alt="NIRA Furniture"
@@ -384,12 +420,12 @@ export default function EnquiryPopup() {
 
           <div className="absolute inset-0 bg-black/20" />
 
-          <div className="absolute bottom-5 left-6">
-            <p className="text-[9px] uppercase tracking-[0.3em] text-white/70">
+          <div className="absolute bottom-4 left-4 sm:bottom-5 sm:left-6">
+            <p className="text-[8px] uppercase tracking-[0.25em] text-white/70 sm:text-[9px] sm:tracking-[0.3em]">
               NIRA Furniture
             </p>
 
-            <h2 className="mt-2 font-serif text-3xl text-white">
+            <h2 className="mt-1.5 font-serif text-2xl leading-tight text-white sm:mt-2 sm:text-3xl">
               Furniture made for{" "}
               <span className="italic text-[#D2BC91]">living.</span>
             </h2>
@@ -399,3 +435,4 @@ export default function EnquiryPopup() {
     </div>
   );
 }
+

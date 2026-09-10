@@ -20,10 +20,46 @@ const locations = [
 
 export default function PrivateAppointment() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  event.preventDefault();
 
-    // Connect your enquiry API / form handler here.
+  const formData = new FormData(event.currentTarget);
+
+  const name = formData.get("name")?.toString().trim();
+  const city = formData.get("city")?.toString().trim();
+  const scope = formData.get("scope")?.toString().trim();
+  const email = formData.get("email")?.toString().trim();
+  const phone = formData.get("phone")?.toString().trim();
+
+  if (!name || !city || !scope || !email || !phone) {
+    alert("Please fill in all required fields.");
+    return;
   }
+
+  const whatsappMessage = `Hello NIRA Furniture,
+
+I would like to request a private appointment.
+
+*Customer Details*
+Name: ${name}
+City / Region: ${city}
+Email: ${email}
+Phone: ${phone}
+
+*Project Details*
+Project Scope: ${scope}
+
+I look forward to hearing from your design team.
+
+Thank you.`;
+
+  const whatsappNumber = "918279416862";
+
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+    whatsappMessage
+  )}`;
+
+  window.location.href = whatsappUrl;
+}
 
   return (
     <section
@@ -625,42 +661,42 @@ export default function PrivateAppointment() {
                   SUBMIT
               ================================================== */}
 
-              <button
-                type="submit"
-                className="
-                  group
-                  flex
-                  h-14
-                  w-full
-                  items-center
-                  justify-center
-                  gap-3
-                  bg-[#171512]
-                  px-5
-                  font-sans
-                  text-[10px]
-                  font-semibold
-                  uppercase
-                  tracking-[0.21em]
-                  text-white
-                  transition-all
-                  duration-300
-                  hover:bg-[#765A32]
-                  hover:tracking-[0.24em]
-                "
-              >
-                Request Exclusive Invitation
+           <button
+  type="submit"
+  className="
+    group
+    flex
+    h-14
+    w-full
+    items-center
+    justify-center
+    gap-3
+    bg-[#171512]
+    px-5
+    font-sans
+    text-[10px]
+    font-semibold
+    uppercase
+    tracking-[0.21em]
+    text-white
+    transition-all
+    duration-300
+    hover:bg-[#765A32]
+    hover:tracking-[0.24em]
+  "
+>
+  Request Exclusive Invitation
 
-                <ArrowRight
-                  size={14}
-                  strokeWidth={1.2}
-                  className="
-                    transition-transform
-                    duration-300
-                    group-hover:translate-x-1
-                  "
-                />
-              </button>
+  <ArrowRight
+    size={14}
+    strokeWidth={1.2}
+    className="
+      transition-transform
+      duration-300
+      group-hover:translate-x-1
+    "
+  />
+</button>
 
               {/* PRIVACY */}
 

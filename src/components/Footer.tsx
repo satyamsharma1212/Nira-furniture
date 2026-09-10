@@ -179,126 +179,7 @@ export default function Footer() {
                 NEWSLETTER
             ================================================== */}
 
-            <div className="lg:pt-2">
-
-              <p
-                className="
-                  mb-4
-                  font-sans
-                  text-[9px]
-                  font-semibold
-                  uppercase
-                  tracking-[0.24em]
-                  text-[#D0B27A]
-                "
-              >
-                Private Correspondence
-              </p>
-
-              <h3
-                className="
-                  font-serif
-                  text-[28px]
-                  font-normal
-                  leading-[1.08]
-                  tracking-[-0.025em]
-                  text-[#F7F4EE]
-                  sm:text-[32px]
-                "
-              >
-                Enter the NIRA Journal
-              </h3>
-
-              <p
-                className="
-                  mt-4
-                  max-w-[430px]
-                  font-sans
-                  text-[15px]
-                  font-medium
-                  leading-[1.8]
-                  tracking-[0.005em]
-                  text-white/60
-                  sm:text-[16px]
-                  lg:text-[17px]
-                "
-              >
-                Receive private atelier notes, new collection
-                releases and invitations to selected NIRA
-                events and design consultations.
-              </p>
-
-              {/* NEWSLETTER FORM */}
-
-              <form
-                className="
-                  mt-7
-                  flex
-                  border-b
-                  border-white/20
-                  pb-3
-                "
-              >
-                <div
-                  className="
-                    flex
-                    min-w-0
-                    flex-1
-                    items-center
-                    gap-3
-                  "
-                >
-                  <Mail
-                    size={15}
-                    strokeWidth={1.2}
-                    className="shrink-0 text-[#D0B27A]"
-                  />
-
-                  <input
-                    type="email"
-                    placeholder="Your correspondence email"
-                    aria-label="Email address"
-                    className="
-                      min-w-0
-                      w-full
-                      bg-transparent
-                      font-sans
-                      text-[13px]
-                      font-medium
-                      text-white
-                      outline-none
-                      placeholder:text-white/30
-                    "
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="
-                    flex
-                    shrink-0
-                    items-center
-                    gap-2
-                    font-sans
-                    text-[10px]
-                    font-semibold
-                    uppercase
-                    tracking-[0.16em]
-                    text-[#D0B27A]
-                    transition-colors
-                    hover:text-white
-                  "
-                >
-                  Subscribe
-
-                  <ArrowUpRight
-                    size={12}
-                    strokeWidth={1.1}
-                  />
-                </button>
-              </form>
-
-            </div>
+            
           </div>
 
           {/* =====================================================
@@ -592,49 +473,56 @@ export default function Footer() {
               © 2026 NIRA Furniture · All Rights Reserved
             </p>
 
-            <div
-              className="
-                flex
-                flex-wrap
-                gap-x-6
-                gap-y-2
-                font-sans
-                text-[9px]
-                font-medium
-                uppercase
-                tracking-[0.12em]
-                text-white/25
-              "
-            >
-              <Link
-                href="/privacy"
-                className="transition-colors hover:text-white/60"
-              >
-                Privacy
-              </Link>
+          <div
+  className="
+    flex
+    flex-wrap
+    gap-x-5
+    gap-y-2
+    font-sans
+    text-[9px]
+    font-medium
+    uppercase
+    tracking-[0.12em]
+    text-white/25
+    sm:gap-x-6
+  "
+>
+  <Link
+    href="/return-refund"
+    className="transition-colors hover:text-white/60"
+  >
+    Returns & Refunds
+  </Link>
 
-              <Link
-                href="/terms"
-                className="transition-colors hover:text-white/60"
-              >
-                Terms
-              </Link>
+  <Link
+    href="/shipping-delivery"
+    className="transition-colors hover:text-white/60"
+  >
+    Shipping & Delivery
+  </Link>
 
-              <Link
-                href="/shipping"
-                className="transition-colors hover:text-white/60"
-              >
-                Delivery
-              </Link>
+  <Link
+    href="/privacy-policy"
+    className="transition-colors hover:text-white/60"
+  >
+    Privacy Policy
+  </Link>
 
-              <Link
-                href="/quality"
-                className="transition-colors hover:text-white/60"
-              >
-                Provenance
-              </Link>
-            </div>
+  <Link
+    href="/terms-and-conditions"
+    className="transition-colors hover:text-white/60"
+  >
+    Terms & Conditions
+  </Link>
 
+  <Link
+    href="/contact-support"
+    className="transition-colors hover:text-white/60"
+  >
+    Contact & Support
+  </Link>
+</div>
           </div>
 
         </div>

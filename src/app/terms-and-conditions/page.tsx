@@ -1,0 +1,16 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
+const sections=[
+["1. Website Use","You agree to use this website lawfully and not interfere with its operation, attempt unauthorized access, misuse accounts, or use it for fraudulent or unlawful purposes."],
+["2. Product Information","We make reasonable efforts to present product descriptions, dimensions, materials, finishes, and images accurately. Handcrafted furniture and natural materials may vary in grain, texture, colour, and finish."],
+["3. Pricing & Availability","Prices and availability may change. We reserve the right to correct obvious errors in pricing or product information and to cancel an affected order, subject to applicable law."],
+["4. Orders & Payments","Orders are subject to confirmation and successful payment where required. Customers are responsible for accurate billing, delivery, and contact information."],
+["5. Custom Orders","Custom dimensions, materials, colours, finishes, upholstery, and bespoke specifications may require separate confirmation. Once production begins, changes or cancellations may not be possible."],
+["6. Intellectual Property","Website content, photographs, logos, graphics, text, designs, and other materials belonging to NIRA or its licensors may not be copied, reproduced, distributed, or commercially exploited without authorization."],
+["7. Third-Party Services","Payment, authentication, analytics, hosting, and logistics may be provided by third parties and may be subject to separate terms and policies."],
+["8. Governing Law","These terms are intended to be governed by applicable laws of India. Disputes will be handled in accordance with applicable Indian law and jurisdiction."],
+];
+export default function Page(){return <Policy title="Terms & Conditions" intro="These Terms & Conditions govern your use of the NIRA Furniture website and purchases made through it. By using the website or placing an order, you agree to these terms." sections={sections}/>;}
+function Policy({title,intro,sections}:{title:string;intro:string;sections:string[][]}){return <main className="min-h-screen bg-[#F4F0E8] text-[#211E1A]"><Header title={title}/><article className="mx-auto max-w-4xl px-5 py-14 sm:px-8 sm:py-20 lg:py-24"><p className="border-l-2 border-[#927344] pl-5 text-base leading-8 text-[#4F4942] sm:text-lg">{intro}</p>{sections.map(([h,p])=><section key={h} className="border-b border-[#211E1A]/10 py-8"><h2 className="font-serif text-2xl sm:text-3xl">{h}</h2><p className="mt-4 text-sm leading-7 text-[#5F5951]">{p}</p></section>)}<Link href="/contact-support" className="mt-6 inline-flex text-sm font-semibold text-[#927344]">Contact NIRA Support →</Link></article></main>}
+function Header({title}:{title:string}){return <header className="border-b border-[#211E1A]/10"><div className="mx-auto max-w-6xl px-5 py-7 sm:px-8"><Link href="/" className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#756D63]"><ArrowLeft size={13}/> NIRA Furniture</Link><p className="mt-12 text-[9px] uppercase tracking-[0.3em] text-[#927344]">Customer Policies</p><h1 className="mt-4 font-serif text-4xl sm:text-5xl lg:text-6xl">{title}</h1></div></header>}

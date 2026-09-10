@@ -22,6 +22,112 @@ export default function ContactPage() {
     "Custom Furniture",
   ];
 
+  /* =========================================================
+     FORM SUBMISSION → WHATSAPP
+  ========================================================= */
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    const name = formData.get("name")?.toString().trim();
+    const email = formData.get("email")?.toString().trim();
+    const phone = formData.get("phone")?.toString().trim();
+    const project = formData.get("project")?.toString().trim();
+    const message = formData.get("message")?.toString().trim();
+
+    /* =======================================================
+       REQUIRED FIELD VALIDATION
+    ======================================================= */
+
+    if (!name) {
+      alert("Please enter your name.");
+      return;
+    }
+
+    if (!email) {
+      alert("Please enter your email address.");
+      return;
+    }
+
+    if (!phone) {
+      alert("Please enter your phone number.");
+      return;
+    }
+
+    if (!project) {
+      alert("Please select a project type.");
+      return;
+    }
+
+    if (!message) {
+      alert("Please enter your message.");
+      return;
+    }
+
+    /* =======================================================
+       WHATSAPP MESSAGE
+    ======================================================= */
+
+    const whatsappMessage = `Hello NIRA Furniture,
+
+I would like to make an enquiry.
+
+*Customer Details*
+Name: ${name}
+Email: ${email}
+Phone: ${phone}
+
+*Project Details*
+Project Type: ${project}
+
+*Message*
+${message}
+
+Thank you.`;
+
+    /* =======================================================
+       WHATSAPP NUMBER
+
+       IMPORTANT:
+       Replace this number with NIRA Furniture's actual
+       WhatsApp number.
+
+       Format:
+       Country code + number
+       NO + sign
+       NO spaces
+       NO dashes
+
+       Example:
+       +91 98765 43210
+       becomes:
+       919876543210
+    ======================================================= */
+
+    const whatsappNumber = "919876543210";
+
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+      whatsappMessage
+    )}`;
+
+    /* =======================================================
+       OPEN WHATSAPP
+    ======================================================= */
+
+    window.open(whatsappUrl, "_blank");
+
+    /* =======================================================
+       RESET FORM
+    ======================================================= */
+
+    form.reset();
+    setProjectType("");
+    setProjectOpen(false);
+  };
+
   return (
     <main className="min-h-screen overflow-hidden bg-[#F7F4EE] text-[#171512]">
 
@@ -84,7 +190,7 @@ export default function ContactPage() {
 
         </div>
       </section>
-
+{/* add real whatsapp number of comapny and email also  */}
 
       {/* =====================================================
           CONTACT CONTENT
@@ -223,270 +329,279 @@ export default function ContactPage() {
             </div>
 
 
-            {/* FORM */}
+            {/* =================================================
+                FORM
+            ================================================= */}
 
-          <form className="space-y-6">
-
-  {/* NAME */}
-
-  <FormField
-    label="Your Name"
-    id="name"
-    name="name"
-    type="text"
-    placeholder="Enter your name"
-  />
-
-
-  {/* EMAIL */}
-
-  <FormField
-    label="Email Address"
-    id="email"
-    name="email"
-    type="email"
-    placeholder="Enter your email"
-  />
-
-
-  {/* PHONE */}
-
-  <FormField
-    label="Phone Number"
-    id="phone"
-    name="phone"
-    type="tel"
-    placeholder="Enter your phone number"
-  />
-
-
-  {/* =================================================
-      PROJECT TYPE — CUSTOM DROPDOWN
-  ================================================= */}
-
-  <div className="relative">
-
-    <button
-      type="button"
-      aria-haspopup="listbox"
-      aria-expanded={projectOpen}
-      onClick={() => setProjectOpen((prev) => !prev)}
-      className={`group w-full rounded-[7px] border px-5 py-4.5 text-left transition-all duration-300 focus:outline-none ${
-        projectOpen
-          ? "border-[#927344] bg-[#F7F4EE]"
-          : "border-[#171512]/10 bg-[#F7F4EE]/60 hover:border-[#171512]/20"
-      }`}
-    >
-
-      {/* Label */}
-
-      <span className="block font-sans text-[11px] font-medium uppercase tracking-[0.2em] text-[#171512]/45">
-        Project Type
-      </span>
-
-
-      {/* Value */}
-
-      <div className="mt-2.5 flex items-center justify-between gap-4">
-
-        <span
-          className={`font-sans text-[18px] leading-8 tracking-[0.005em] ${
-            projectType
-              ? "font-medium text-[#171512]"
-              : "font-medium text-[#171512]/35"
-          }`}
-        >
-          {projectType || "Select project type"}
-        </span>
-
-
-        {/* Chevron */}
-
-        <span
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
-            projectOpen
-              ? "rotate-180 border-[#765A32]/40 bg-[#E8E0D3] text-[#765A32]"
-              : "border-[#765A32]/15 bg-[#EEE8DE] text-[#765A32]"
-          }`}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <path
-              d="M6 9l6 6 6-6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </span>
-
-      </div>
-
-    </button>
-
-
-    {/* =================================================
-        DROPDOWN MENU
-    ================================================= */}
-
-    <div
-      role="listbox"
-      aria-hidden={!projectOpen}
-      className={`absolute left-0 right-0 top-full z-50 mt-2 origin-top overflow-hidden rounded-[8px] border border-[#171512]/10 bg-[#F7F4EE] shadow-[0_20px_50px_rgba(23,21,18,0.12)] transition-all duration-200 ${
-        projectOpen
-          ? "visible translate-y-0 scale-100 opacity-100"
-          : "invisible -translate-y-2 scale-[0.98] opacity-0"
-      }`}
-    >
-
-      {/* Dropdown header */}
-
-      <div className="border-b border-[#171512]/10 px-5 py-4">
-        <p className="font-sans text-[10px] font-medium uppercase tracking-[0.2em] text-[#171512]/35">
-          Select an option
-        </p>
-      </div>
-
-
-      {/* Options */}
-
-      <div className="p-2">
-
-        {projectOptions.map((option) => {
-
-          const selected = projectType === option;
-
-          return (
-            <button
-              key={option}
-              type="button"
-              role="option"
-              aria-selected={selected}
-              onClick={() => {
-                setProjectType(option);
-                setProjectOpen(false);
-              }}
-              className={`group/option flex w-full items-center justify-between rounded-[6px] px-4 py-4 text-left transition-all duration-200 ${
-                selected
-                  ? "bg-[#E8E0D3] text-[#765A32]"
-                  : "text-[#171512]/75 hover:bg-[#EEE8DE] hover:text-[#171512]"
-              }`}
+            <form
+              className="space-y-6"
+              onSubmit={handleSubmit}
             >
 
-              <span className="font-sans text-[16px] font-medium leading-7 tracking-[0.005em]">
-                {option}
-              </span>
+              {/* NAME */}
 
-              {selected && (
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  className="shrink-0 text-[#765A32]"
+              <FormField
+                label="Your Name *"
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Enter your name"
+                required
+              />
+
+
+              {/* EMAIL */}
+
+              <FormField
+                label="Email Address *"
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                required
+              />
+
+
+              {/* PHONE */}
+
+              <FormField
+                label="Phone Number *"
+                id="phone"
+                name="phone"
+                type="tel"
+                placeholder="Enter your phone number"
+                required
+              />
+
+
+              {/* =================================================
+                  PROJECT TYPE
+              ================================================= */}
+
+              <div className="relative">
+
+                <button
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded={projectOpen}
+                  onClick={() => setProjectOpen((prev) => !prev)}
+                  className={`group w-full rounded-[7px] border px-5 py-4.5 text-left transition-all duration-300 focus:outline-none ${
+                    projectOpen
+                      ? "border-[#927344] bg-[#F7F4EE]"
+                      : "border-[#171512]/10 bg-[#F7F4EE]/60 hover:border-[#171512]/20"
+                  }`}
                 >
-                  <path
-                    d="M5 12.5l4 4L19 7"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
 
-            </button>
-          );
-        })}
+                  {/* Label */}
 
-      </div>
-
-    </div>
+                  <span className="block font-sans text-[11px] font-medium uppercase tracking-[0.2em] text-[#171512]/45">
+                    Project Type *
+                  </span>
 
 
-    {/* Hidden field for form submission */}
+                  {/* Value */}
 
-    <input
-      type="hidden"
-      name="project"
-      value={projectType}
-    />
+                  <div className="mt-2.5 flex items-center justify-between gap-4">
 
-  </div>
-
-
-  {/* MESSAGE */}
-
-  <div className="rounded-[7px] border border-[#171512]/10 bg-[#F7F4EE]/50 px-5 py-4.5 transition-all duration-300 focus-within:border-[#927344] focus-within:bg-[#F7F4EE]/80">
-
-    <label
-      htmlFor="message"
-      className="block font-sans text-[11px] font-medium uppercase tracking-[0.16em] text-[#171512]/50"
-    >
-      Your Message
-    </label>
-
-    <textarea
-      id="message"
-      name="message"
-      rows={6}
-      placeholder="Tell us about your requirements..."
-      className="mt-3 w-full resize-none bg-transparent font-sans text-[17px] font-medium leading-8 tracking-[0.005em] text-[#171512] outline-none placeholder:text-[#171512]/30"
-    />
-
-  </div>
+                    <span
+                      className={`font-sans text-[18px] leading-8 tracking-[0.005em] ${
+                        projectType
+                          ? "font-medium text-[#171512]"
+                          : "font-medium text-[#171512]/35"
+                      }`}
+                    >
+                      {projectType || "Select project type"}
+                    </span>
 
 
-  {/* SUBMIT */}
+                    {/* Chevron */}
 
-  <button
-    type="submit"
-    className="
-      group
-      mt-3
-      flex
-      h-16
-      w-full
-      items-center
-      justify-center
-      gap-4
-      rounded-[5px]
-      bg-[#171512]
-      px-7
-      font-sans
-      text-[13px]
-      font-medium
-      uppercase
-      tracking-[0.2em]
-      text-white
-      transition-all
-      duration-300
-      hover:bg-[#765A32]
-    "
-  >
-    Send Enquiry
+                    <span
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
+                        projectOpen
+                          ? "rotate-180 border-[#765A32]/40 bg-[#E8E0D3] text-[#765A32]"
+                          : "border-[#765A32]/15 bg-[#EEE8DE] text-[#765A32]"
+                      }`}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      >
+                        <path
+                          d="M6 9l6 6 6-6"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
 
-    <ArrowRight
-      size={18}
-      strokeWidth={1.2}
-      className="transition-transform duration-500 group-hover:translate-x-1.5"
-    />
-  </button>
+                  </div>
+
+                </button>
 
 
-  {/* DISCLAIMER */}
+                {/* =================================================
+                    DROPDOWN MENU
+                ================================================= */}
 
-  <p className="pt-1 text-center font-sans text-[12px] font-medium leading-6 tracking-[0.005em] text-[#171512]/35">
-    By submitting this form, you agree to be contacted by the
-    NIRA Furniture team regarding your enquiry.
-  </p>
+                <div
+                  role="listbox"
+                  aria-hidden={!projectOpen}
+                  className={`absolute left-0 right-0 top-full z-50 mt-2 origin-top overflow-hidden rounded-[8px] border border-[#171512]/10 bg-[#F7F4EE] shadow-[0_20px_50px_rgba(23,21,18,0.12)] transition-all duration-200 ${
+                    projectOpen
+                      ? "visible translate-y-0 scale-100 opacity-100"
+                      : "invisible -translate-y-2 scale-[0.98] opacity-0"
+                  }`}
+                >
 
-</form>
+                  {/* Dropdown header */}
+
+                  <div className="border-b border-[#171512]/10 px-5 py-4">
+                    <p className="font-sans text-[10px] font-medium uppercase tracking-[0.2em] text-[#171512]/35">
+                      Select an option
+                    </p>
+                  </div>
+
+
+                  {/* Options */}
+
+                  <div className="p-2">
+
+                    {projectOptions.map((option) => {
+
+                      const selected = projectType === option;
+
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          role="option"
+                          aria-selected={selected}
+                          onClick={() => {
+                            setProjectType(option);
+                            setProjectOpen(false);
+                          }}
+                          className={`group/option flex w-full items-center justify-between rounded-[6px] px-4 py-4 text-left transition-all duration-200 ${
+                            selected
+                              ? "bg-[#E8E0D3] text-[#765A32]"
+                              : "text-[#171512]/75 hover:bg-[#EEE8DE] hover:text-[#171512]"
+                          }`}
+                        >
+
+                          <span className="font-sans text-[16px] font-medium leading-7 tracking-[0.005em]">
+                            {option}
+                          </span>
+
+                          {selected && (
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.6"
+                              className="shrink-0 text-[#765A32]"
+                            >
+                              <path
+                                d="M5 12.5l4 4L19 7"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+
+                        </button>
+                      );
+                    })}
+
+                  </div>
+
+                </div>
+
+
+                {/* Hidden field */}
+
+                <input
+                  type="hidden"
+                  name="project"
+                  value={projectType}
+                />
+
+              </div>
+
+
+              {/* MESSAGE */}
+
+              <div className="rounded-[7px] border border-[#171512]/10 bg-[#F7F4EE]/50 px-5 py-4.5 transition-all duration-300 focus-within:border-[#927344] focus-within:bg-[#F7F4EE]/80">
+
+                <label
+                  htmlFor="message"
+                  className="block font-sans text-[11px] font-medium uppercase tracking-[0.16em] text-[#171512]/50"
+                >
+                  Your Message *
+                </label>
+
+                <textarea
+                  id="message"
+                  name="message"
+                  required
+                  rows={6}
+                  placeholder="Tell us about your requirements..."
+                  className="mt-3 w-full resize-none bg-transparent font-sans text-[17px] font-medium leading-8 tracking-[0.005em] text-[#171512] outline-none placeholder:text-[#171512]/30"
+                />
+
+              </div>
+
+
+              {/* SUBMIT */}
+
+              <button
+                type="submit"
+                className="
+                  group
+                  mt-3
+                  flex
+                  h-16
+                  w-full
+                  items-center
+                  justify-center
+                  gap-4
+                  rounded-[5px]
+                  bg-[#171512]
+                  px-7
+                  font-sans
+                  text-[13px]
+                  font-medium
+                  uppercase
+                  tracking-[0.2em]
+                  text-white
+                  transition-all
+                  duration-300
+                  hover:bg-[#765A32]
+                "
+              >
+                Send Enquiry
+
+                <ArrowRight
+                  size={18}
+                  strokeWidth={1.2}
+                  className="transition-transform duration-500 group-hover:translate-x-1.5"
+                />
+              </button>
+
+
+              {/* DISCLAIMER */}
+
+              <p className="pt-1 text-center font-sans text-[12px] font-medium leading-6 tracking-[0.005em] text-[#171512]/35">
+                By submitting this form, you agree to be contacted by the
+                NIRA Furniture team regarding your enquiry.
+              </p>
+
+            </form>
 
           </div>
 
@@ -499,7 +614,7 @@ export default function ContactPage() {
           PROJECT CTA
       ===================================================== */}
 
-      <section className="relative overflow-hidden bg-[#171512] px-5 py-24 text-[#F4F0E8] sm:px-8 sm:py-32 lg:px-12 lg:py-40 xl:px-16">
+      <section className="relative overflow-hidden bg-[#171512] px-5 py-24 text-[#F4F0EE] sm:px-8 sm:py-32 lg:px-12 lg:py-40 xl:px-16">
 
         {/* Decorative circles */}
 
@@ -639,12 +754,14 @@ function FormField({
   name,
   type,
   placeholder,
+  required = false,
 }: {
   label: string;
   id: string;
   name: string;
   type: string;
   placeholder: string;
+  required?: boolean;
 }) {
   return (
     <div className="rounded-[7px] border border-[#171512]/10 bg-[#F7F4EE]/50 px-5 py-4.5 transition-all duration-300 focus-within:border-[#927344] focus-within:bg-[#F7F4EE]/80">
@@ -661,6 +778,7 @@ function FormField({
         name={name}
         type={type}
         placeholder={placeholder}
+        required={required}
         className="mt-2 w-full bg-transparent font-sans text-[17px] font-medium leading-8 tracking-[0.005em] text-[#171512] outline-none placeholder:text-[#171512]/30"
       />
 
