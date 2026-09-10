@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -25,7 +24,7 @@ export default function EnquiryPopup() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#211E1A]/45 px-2.5 py-3 sm:px-4 sm:py-6 backdrop-blur-[5px]">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#211E1A]/45 px-2.5 py-3 backdrop-blur-[5px] sm:px-4 sm:py-6">
       {/* =====================================================
           BACKDROP
       ====================================================== */}
@@ -172,19 +171,35 @@ export default function EnquiryPopup() {
                   const form = event.currentTarget;
                   const formData = new FormData(form);
 
-                  const name = formData.get("name");
-                  const phone = formData.get("phone");
-                  const requirement = formData.get("requirement");
+                  const name = String(formData.get("name") || "").trim();
+                  const phone = String(formData.get("phone") || "").trim();
+                  const requirement = String(
+                    formData.get("requirement") || ""
+                  ).trim();
 
-                  console.log({
-                    name,
-                    phone,
-                    requirement,
-                  });
+                  const whatsappNumber = "918279416862";
+
+                  const whatsappMessage = `Hello NIRA Furniture,
+
+I would like to make an enquiry.
+
+*Customer Details*
+Name: ${name}
+Phone: ${phone}
+
+*Requirement*
+${requirement}
+
+Thank you.
+I look forward to hearing from the NIRA Furniture team.`;
+
+                  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+                    whatsappMessage
+                  )}`;
 
                   setOpen(false);
 
-                  window.location.href = "/enquiry";
+                  window.location.href = whatsappUrl;
                 }}
               >
                 {/* Name */}
@@ -435,4 +450,3 @@ export default function EnquiryPopup() {
     </div>
   );
 }
-
