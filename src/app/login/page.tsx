@@ -185,7 +185,7 @@ export default function LoginPage() {
             RIGHT — LOGIN
         ========================================================= */}
 
-        <section className="flex min-h-screen items-start justify-center px-6 pb-12 pt-24 sm:px-10 sm:pb-12 sm:pt-28 lg:px-16 lg:pt-32">
+        <section className="flex min-h-screen items-start justify-center px-6 pb-12 pt-40 sm:px-10 sm:pb-12 sm:pt-44 lg:px-16 lg:pt-32">
 
           <div className="w-full max-w-md">
 

@@ -834,7 +834,7 @@ export default function CuratedMasterpieces() {
           <p
             className="
               font-sans
-              text-[9px]
+              text-[15px]
               font-medium
               uppercase
               tracking-[0.25em]

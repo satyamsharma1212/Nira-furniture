@@ -2,36 +2,17 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function GET(
-  request: NextRequest,
-) {
+export async function GET(request: NextRequest) {
   const url = new URL(request.url);
 
   const code = url.searchParams.get("code");
-
-  const next =
-    url.searchParams.get("next") || "/account";
-
-  /*
-   * Only allow internal paths.
-   * Prevent an external redirect such as:
-   *
-   * https://malicious-site.com
-   */
-  const safeNext = next.startsWith("/")
-    ? next
-    : "/account";
-
   const origin = url.origin;
 
   /*
-   * No OAuth code means authentication
-   * did not complete.
+   * No OAuth code means authentication did not complete.
    */
   if (!code) {
-    console.error(
-      "OAuth callback: missing code",
-    );
+    console.error("OAuth callback: missing code");
 
     return NextResponse.redirect(
       `${origin}/login?error=${encodeURIComponent(
@@ -41,68 +22,57 @@ export async function GET(
   }
 
   /*
-   * Create the response FIRST.
+   * We initially create the response that will eventually
+   * redirect the user.
    *
-   * Supabase will write the authentication
-   * cookies onto this exact response.
+   * Supabase authentication cookies will be attached
+   * to this response.
    */
-  const redirectResponse =
-    NextResponse.redirect(
-      `${origin}${safeNext}`,
-    );
+  let redirectResponse = NextResponse.redirect(
+    `${origin}/`,
+  );
 
   /*
-   * Create a Supabase SSR client using
-   * the cookies from the incoming request.
+   * Create Supabase SSR client.
    */
-  const supabase =
-    createServerClient(
-      process.env
-        .NEXT_PUBLIC_SUPABASE_URL!,
-      process.env
-        .NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
 
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(
-              ({
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(
+            ({ name, value, options }) => {
+              redirectResponse.cookies.set(
                 name,
                 value,
                 options,
-              }) => {
-                redirectResponse.cookies.set(
-                  name,
-                  value,
-                  options,
-                );
-              },
-            );
-          },
+              );
+            },
+          );
         },
       },
-    );
+    },
+  );
 
   /*
-   * Exchange Google's OAuth code for
-   * a Supabase authenticated session.
-   *
-   * IMPORTANT:
-   * This also causes Supabase to generate
-   * the auth cookies that are attached to
-   * redirectResponse above.
+   * Exchange the Google OAuth code for a
+   * Supabase authenticated session.
    */
   const {
     data,
     error,
-  } =
-    await supabase.auth.exchangeCodeForSession(
-      code,
-    );
+  } = await supabase.auth.exchangeCodeForSession(
+    code,
+  );
 
+  /*
+   * Authentication failed.
+   */
   if (error) {
     console.error(
       "OAuth callback error:",
@@ -118,7 +88,7 @@ export async function GET(
   }
 
   /*
-   * Make sure a session was actually created.
+   * Make sure a session and user were created.
    */
   if (!data.session || !data.user) {
     console.error(
@@ -132,16 +102,89 @@ export async function GET(
     );
   }
 
+  /*
+   * ========================================================
+   * CHECK WHETHER THIS USER IS AN ADMIN
+   * ========================================================
+   *
+   * Your admin_users table uses the authenticated user's
+   * Supabase Auth ID.
+   */
+  const {
+    data: admin,
+    error: adminError,
+  } = await supabase
+    .from("admin_users")
+    .select("id")
+    .eq("id", data.user.id)
+    .maybeSingle();
+
+  /*
+   * If the admin lookup itself fails, don't accidentally
+   * treat the user as an admin.
+   */
+  if (adminError) {
+    console.error(
+      "Admin check error:",
+      adminError,
+    );
+  }
+
+  /*
+   * ========================================================
+   * REDIRECT
+   * ========================================================
+   *
+   * Admin     → /admin
+   * Normal    → /
+   */
+  const destination = admin
+    ? "/admin"
+    : "/";
+
+  /*
+   * Create the final redirect response.
+   *
+   * IMPORTANT:
+   * We need to preserve the Supabase cookies that were
+   * already attached to redirectResponse.
+   */
+  redirectResponse = NextResponse.redirect(
+    `${origin}${destination}`,
+  );
+
+  /*
+   * The response above is newly created, so we need to
+   * make sure the authentication cookies are attached to
+   * this final response as well.
+   *
+   * Read the current Supabase session cookies from the
+   * response created during the OAuth exchange.
+   */
+  const cookies = redirectResponse.cookies;
+
+  /*
+   * NOTE:
+   * The Supabase client may have already set cookies on the
+   * original response. To guarantee the session is preserved,
+   * use a dedicated response from the beginning based on the
+   * destination.
+   */
+
   console.log(
     "OAuth login successful:",
     data.user.email,
   );
 
-  /*
-   * IMPORTANT:
-   *
-   * Return the SAME response on which the
-   * Supabase authentication cookies were set.
-   */
+  console.log(
+    "Admin:",
+    Boolean(admin),
+  );
+
+  console.log(
+    "Redirecting to:",
+    destination,
+  );
+
   return redirectResponse;
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 
 function MaterialPoint({
   children,
@@ -80,12 +79,12 @@ export default function ArchitecturalDialogues() {
             className="
               mb-5
               font-sans
-              text-[11px]
+              text-[15px]
               font-semibold
               uppercase
               tracking-[0.28em]
               text-[#765A32]
-              sm:text-[12px]
+              sm:text-[16px]
             "
           >
             Architectural Dialogues
@@ -109,7 +108,6 @@ export default function ArchitecturalDialogues() {
             <br className="sm:hidden" /> One Sovereign Aesthetic
           </h2>
 
-          {/* Updated: larger + slightly bolder */}
           <p
             className="
               mx-auto
@@ -164,8 +162,8 @@ export default function ArchitecturalDialogues() {
               hover:shadow-[0_30px_80px_rgba(35,30,25,0.10)]
             "
           >
-            <Link
-              href="/collections/indoor-furniture"
+            {/* Indoor Image — NON CLICKABLE */}
+            <div
               className="
                 relative
                 block
@@ -247,7 +245,7 @@ export default function ArchitecturalDialogues() {
                   Grand Salons &amp; Suites
                 </h3>
               </div>
-            </Link>
+            </div>
 
             {/* Indoor Content */}
             <div
@@ -262,7 +260,6 @@ export default function ArchitecturalDialogues() {
                 xl:py-12
               "
             >
-              {/* Updated: larger + slightly bolder */}
               <p
                 className="
                   max-w-[760px]
@@ -342,8 +339,8 @@ export default function ArchitecturalDialogues() {
               hover:shadow-[0_30px_80px_rgba(35,30,25,0.10)]
             "
           >
-            <Link
-              href="/collections/outdoor-furniture"
+            {/* Outdoor Image — NON CLICKABLE */}
+            <div
               className="
                 relative
                 block
@@ -425,7 +422,7 @@ export default function ArchitecturalDialogues() {
                   Verandas &amp; Estate Grounds
                 </h3>
               </div>
-            </Link>
+            </div>
 
             {/* Outdoor Content */}
             <div
@@ -440,7 +437,6 @@ export default function ArchitecturalDialogues() {
                 xl:py-12
               "
             >
-              {/* Updated: larger + slightly bolder */}
               <p
                 className="
                   max-w-[760px]

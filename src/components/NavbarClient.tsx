@@ -146,8 +146,18 @@ export default function NavbarClient({
   const [mounted, setMounted] =
     useState(false);
 
+  /* =========================================================
+     SEARCH REFS
+  ========================================================= */
+
   const searchInputRef =
     useRef<HTMLInputElement | null>(null);
+
+  const searchButtonRef =
+    useRef<HTMLButtonElement | null>(null);
+
+  const searchPanelRef =
+    useRef<HTMLDivElement | null>(null);
 
   const searchPanelId = useId();
   const searchResultsId = useId();
@@ -235,6 +245,62 @@ export default function NavbarClient({
       );
     };
   }, []);
+
+  /* =========================================================
+     CLOSE SEARCH WHEN CLICKING / TOUCHING / DRAGGING
+     OUTSIDE THE SEARCH AREA
+  ========================================================= */
+
+  useEffect(() => {
+    if (!searchOpen) return;
+
+    const handleOutsidePointer = (
+      event: PointerEvent,
+    ) => {
+      const target = event.target as Node | null;
+
+      if (!target) return;
+
+      const clickedSearchButton =
+        searchButtonRef.current?.contains(target);
+
+      const clickedSearchPanel =
+        searchPanelRef.current?.contains(target);
+
+      /*
+       * If the pointer interaction starts anywhere
+       * outside the search button and search panel,
+       * immediately close the search.
+       *
+       * This works for:
+       * - Mouse click
+       * - Touch
+       * - Pen
+       * - Starting a drag/swipe
+       */
+      if (
+        !clickedSearchButton &&
+        !clickedSearchPanel
+      ) {
+        setSearchOpen(false);
+        setSearchQuery("");
+      }
+    };
+
+    document.addEventListener(
+      "pointerdown",
+      handleOutsidePointer,
+      true,
+    );
+
+    return () => {
+      document.removeEventListener(
+        "pointerdown",
+        handleOutsidePointer,
+        true,
+      );
+    };
+  }, [searchOpen]);
 
   /* =========================================================
      SEARCH ACTIONS
@@ -327,6 +393,7 @@ export default function NavbarClient({
         ================================================== */}
 
         <button
+          ref={searchButtonRef}
           type="button"
           aria-label={
             searchOpen
@@ -375,40 +442,6 @@ export default function NavbarClient({
             />
           )}
         </button>
-
-        {/* =================================================
-            ENQUIRE
-        ================================================== */}
-
-        <Link
-          href="/enquiry"
-          className="
-            flex
-            h-9
-            shrink-0
-            items-center
-            justify-center
-            border
-            border-[#B88A2B]
-            bg-[#B88A2B]
-            px-3
-            font-sans
-            text-[9px]
-            font-bold
-            uppercase
-            tracking-[0.16em]
-            text-white
-            transition-all
-            duration-300
-            hover:border-[#241F18]
-            hover:bg-[#241F18]
-            sm:h-10
-            sm:px-4
-            sm:text-[10px]
-          "
-        >
-          Enquire Now
-        </Link>
 
         {/* =================================================
             MOBILE MENU
@@ -470,6 +503,7 @@ export default function NavbarClient({
 
       {searchOpen && (
         <div
+          ref={searchPanelRef}
           id={searchPanelId}
           className="
             absolute
@@ -1126,6 +1160,8 @@ export default function NavbarClient({
                 <div className="mt-auto px-6 pb-6 pt-3 sm:px-8">
 
                   <div className="mb-5 h-px bg-[#171512]/10" />
+
+                  {/* ENQUIRE NOW — MOBILE MENU ONLY */}
 
                   <Link
                     href="/enquiry"

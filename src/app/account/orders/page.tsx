@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+
 import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
   Clock3,
   Package,
+  RotateCcw,
   Truck,
   XCircle,
 } from "lucide-react";
@@ -82,6 +84,10 @@ function formatStatus(status: string) {
 export default async function AccountOrdersPage() {
   const supabase = await createClient();
 
+  /* =========================================================
+     AUTH
+  ========================================================= */
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -89,6 +95,10 @@ export default async function AccountOrdersPage() {
   if (!user) {
     redirect("/login?next=/account/orders");
   }
+
+  /* =========================================================
+     FETCH ORDERS
+  ========================================================= */
 
   const { data: orders, error } = await supabase
     .from("orders")
@@ -123,12 +133,29 @@ export default async function AccountOrdersPage() {
 
   const userOrders = orders ?? [];
 
+  /* =========================================================
+     PAGE
+  ========================================================= */
+
   return (
     <main className="min-h-screen bg-[#F7F4EE] text-[#171512]">
-      <section className="mx-auto max-w-6xl px-6 py-16 sm:px-10 lg:px-12 lg:py-24">
+      <section
+        className="
+          mx-auto
+          max-w-7xl
+          px-5
+          py-14
+          sm:px-8
+          lg:px-10
+          lg:py-20
+          xl:px-12
+        "
+      >
+        {/* =====================================================
+            HEADER
+        ====================================================== */}
 
-        {/* HEADER */}
-        <div className="mb-10">
+        <div className="mb-12">
           <Link
             href="/account"
             className="
@@ -188,12 +215,15 @@ export default async function AccountOrdersPage() {
               text-[#171512]/50
             "
           >
-            View your NIRA purchases, payment status, order progress,
-            and complete order details.
+            View your NIRA purchases, payment status,
+            order progress, and complete order details.
           </p>
         </div>
 
-        {/* ORDERS */}
+        {/* =====================================================
+            ORDERS
+        ====================================================== */}
+
         {userOrders.length === 0 ? (
           <div
             className="
@@ -279,7 +309,7 @@ export default async function AccountOrdersPage() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-5">
+          <div className="space-y-6">
             {userOrders.map((order) => {
               const orderItems = Array.isArray(order.order_items)
                 ? order.order_items
@@ -293,19 +323,32 @@ export default async function AccountOrdersPage() {
                 0,
               );
 
+              /*
+               * Customer can request a return only after
+               * the order has been shipped.
+               */
+              const canReturn =
+                order.order_status === "shipped";
+
               return (
                 <article
                   key={order.id}
                   className="
+                    overflow-hidden
                     border
                     border-[#171512]/10
                     bg-white
-                    transition
+                    shadow-[0_8px_30px_rgba(23,21,18,0.025)]
+                    transition-all
                     duration-300
                     hover:border-[#765A32]/25
+                    hover:shadow-[0_12px_40px_rgba(23,21,18,0.05)]
                   "
                 >
-                  {/* TOP */}
+                  {/* =================================================
+                      TOP / ORDER HEADER
+                  ================================================== */}
+
                   <div
                     className="
                       flex
@@ -315,12 +358,15 @@ export default async function AccountOrdersPage() {
                       border-[#171512]/10
                       px-6
                       py-6
-                      sm:flex-row
-                      sm:items-center
-                      sm:justify-between
                       sm:px-8
+                      lg:flex-row
+                      lg:items-center
+                      lg:justify-between
+                      lg:px-10
                     "
                   >
+                    {/* ORDER INFORMATION */}
+
                     <div>
                       <p
                         className="
@@ -342,6 +388,7 @@ export default async function AccountOrdersPage() {
                           text-2xl
                           font-semibold
                           text-[#171512]
+                          sm:text-3xl
                         "
                       >
                         #{order.order_number}
@@ -356,11 +403,16 @@ export default async function AccountOrdersPage() {
                           text-[#171512]/40
                         "
                       >
-                        Placed on {formatDate(order.created_at)}
+                        Placed on{" "}
+                        {formatDate(order.created_at)}
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3">
+                    {/* STATUS */}
+
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {/* ORDER STATUS */}
+
                       <span
                         className={`
                           inline-flex
@@ -375,15 +427,26 @@ export default async function AccountOrdersPage() {
                           font-bold
                           uppercase
                           tracking-[0.16em]
-                          ${getStatusClasses(order.order_status)}
+                          ${getStatusClasses(
+                            order.order_status,
+                          )}
                         `}
                       >
-                        {getStatusIcon(order.order_status)}
-                        {formatStatus(order.order_status)}
+                        {getStatusIcon(
+                          order.order_status,
+                        )}
+
+                        {formatStatus(
+                          order.order_status,
+                        )}
                       </span>
+
+                      {/* PAYMENT STATUS */}
 
                       <span
                         className={`
+                          inline-flex
+                          items-center
                           rounded-full
                           border
                           px-3
@@ -394,41 +457,79 @@ export default async function AccountOrdersPage() {
                           uppercase
                           tracking-[0.16em]
                           ${
-                            order.payment_status === "paid"
+                            order.payment_status ===
+                            "paid"
                               ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                              : order.payment_status === "failed"
+                              : order.payment_status ===
+                                  "failed"
                                 ? "border-red-200 bg-red-50 text-red-700"
                                 : "border-amber-200 bg-amber-50 text-amber-700"
                           }
                         `}
                       >
-                        Payment: {formatStatus(order.payment_status)}
+                        Payment:{" "}
+                        {formatStatus(
+                          order.payment_status,
+                        )}
                       </span>
                     </div>
                   </div>
 
-                  {/* CONTENT */}
-                  <div className="flex flex-col gap-6 px-6 py-6 sm:px-8 lg:flex-row lg:items-center">
+                  {/* =================================================
+                      CONTENT
+                  ================================================== */}
 
-                    {/* PRODUCT PREVIEW */}
-                    <div className="flex min-w-0 flex-1 gap-5">
+                  <div
+                    className="
+                      grid
+                      gap-8
+                      px-6
+                      py-7
+                      sm:px-8
+                      lg:grid-cols-[minmax(0,1fr)_auto_190px]
+                      lg:items-center
+                      lg:gap-10
+                      lg:px-10
+                      lg:py-9
+                    "
+                  >
+                    {/* =================================================
+                        PRODUCT PREVIEW
+                    ================================================== */}
+
+                    <div className="flex min-w-0 items-center gap-6">
+                      {/* PRODUCT IMAGE */}
+
                       <div
                         className="
-                          h-24
-                          w-24
+                          h-28
+                          w-28
                           shrink-0
                           overflow-hidden
+                          border
+                          border-[#171512]/5
                           bg-[#F3F0E9]
+                          sm:h-32
+                          sm:w-32
                         "
                       >
                         {firstItem?.product_image_url ? (
                           <img
-                            src={firstItem.product_image_url}
+                            src={
+                              firstItem.product_image_url
+                            }
                             alt={
                               firstItem.product_name ||
                               "NIRA product"
                             }
-                            className="h-full w-full object-cover"
+                            className="
+                              h-full
+                              w-full
+                              object-cover
+                              transition-transform
+                              duration-500
+                              hover:scale-105
+                            "
                           />
                         ) : (
                           <div
@@ -439,7 +540,7 @@ export default async function AccountOrdersPage() {
                               items-center
                               justify-center
                               font-serif
-                              text-lg
+                              text-2xl
                               text-[#765A32]/50
                             "
                           >
@@ -448,13 +549,18 @@ export default async function AccountOrdersPage() {
                         )}
                       </div>
 
+                      {/* PRODUCT DETAILS */}
+
                       <div className="min-w-0">
                         <p
                           className="
+                            max-w-md
                             font-serif
-                            text-2xl
+                            text-xl
                             font-medium
+                            leading-tight
                             text-[#171512]
+                            sm:text-2xl
                           "
                         >
                           {firstItem?.product_name ||
@@ -464,14 +570,16 @@ export default async function AccountOrdersPage() {
                         {orderItems.length > 1 && (
                           <p
                             className="
-                              mt-1
+                              mt-2
                               font-sans
                               text-xs
                               font-medium
                               text-[#171512]/45
                             "
                           >
-                            + {orderItems.length - 1} more{" "}
+                            +{" "}
+                            {orderItems.length - 1}{" "}
+                            more{" "}
                             {orderItems.length - 1 === 1
                               ? "item"
                               : "items"}
@@ -480,12 +588,12 @@ export default async function AccountOrdersPage() {
 
                         <p
                           className="
-                            mt-2
+                            mt-3
                             font-sans
-                            text-xs
-                            font-medium
+                            text-[10px]
+                            font-bold
                             uppercase
-                            tracking-[0.12em]
+                            tracking-[0.15em]
                             text-[#171512]/35
                           "
                         >
@@ -497,8 +605,22 @@ export default async function AccountOrdersPage() {
                       </div>
                     </div>
 
-                    {/* TOTAL */}
-                    <div className="lg:min-w-[190px] lg:text-right">
+                    {/* =================================================
+                        TOTAL
+                    ================================================== */}
+
+                    <div
+                      className="
+                        border-t
+                        border-[#171512]/10
+                        pt-5
+                        lg:border-l
+                        lg:border-t-0
+                        lg:pl-10
+                        lg:pt-0
+                        lg:text-right
+                      "
+                    >
                       <p
                         className="
                           font-sans
@@ -516,9 +638,10 @@ export default async function AccountOrdersPage() {
                         className="
                           mt-1
                           font-serif
-                          text-3xl
+                          text-2xl
                           font-medium
                           text-[#171512]
+                          sm:text-3xl
                         "
                       >
                         {formatMoney(
@@ -528,36 +651,52 @@ export default async function AccountOrdersPage() {
                       </p>
                     </div>
 
-                    {/* VIEW */}
-                    <div className="lg:min-w-[150px]">
+                    {/* =================================================
+                        ACTIONS
+                    ================================================== */}
+
+                    <div
+                      className="
+                        flex
+                        w-full
+                        flex-col
+                        gap-2.5
+                        lg:w-[190px]
+                      "
+                    >
+                      {/* VIEW ORDER */}
+
                       <Link
                         href={`/account/orders/${order.id}`}
                         className="
                           group
                           inline-flex
+                          h-11
                           w-full
                           items-center
                           justify-center
-                          gap-3
+                          gap-2.5
                           border
                           border-[#171512]/15
-                          px-5
-                          py-3.5
+                          bg-white
+                          px-4
                           font-sans
-                          text-[10px]
+                          text-[9px]
                           font-bold
                           uppercase
-                          tracking-[0.18em]
+                          tracking-[0.16em]
                           text-[#171512]
-                          transition
+                          transition-all
+                          duration-300
                           hover:border-[#765A32]
                           hover:bg-[#765A32]
                           hover:text-white
                         "
                       >
                         View Order
+
                         <ArrowRight
-                          size={14}
+                          size={13}
                           className="
                             transition-transform
                             duration-300
@@ -565,6 +704,48 @@ export default async function AccountOrdersPage() {
                           "
                         />
                       </Link>
+
+                      {/* RETURN ORDER */}
+
+                      {canReturn && (
+                        <Link
+                          href={`/account/orders/${order.id}?return=true`}
+                          className="
+                            group
+                            inline-flex
+                            h-9
+                            w-full
+                            items-center
+                            justify-center
+                            gap-2
+                            border
+                            border-[#765A32]
+                            bg-[#765A32]
+                            px-3
+                            font-sans
+                            text-[8px]
+                            font-bold
+                            uppercase
+                            tracking-[0.14em]
+                            text-white
+                            transition-all
+                            duration-300
+                            hover:border-[#171512]
+                            hover:bg-[#171512]
+                          "
+                        >
+                          <RotateCcw
+                            size={12}
+                            className="
+                              transition-transform
+                              duration-300
+                              group-hover:-rotate-12
+                            "
+                          />
+
+                          Return Order
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </article>
@@ -573,7 +754,10 @@ export default async function AccountOrdersPage() {
           </div>
         )}
 
-        {/* BACK */}
+        {/* =====================================================
+            BACK TO ACCOUNT
+        ====================================================== */}
+
         <div className="mt-10">
           <Link
             href="/account"

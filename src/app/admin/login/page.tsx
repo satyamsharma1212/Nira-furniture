@@ -32,7 +32,7 @@ export default function AdminLoginPage() {
       <div className="grid min-h-screen lg:grid-cols-2">
 
         {/* BRANDING */}
-        <section className="hidden lg:flex min-h-screen flex-col justify-between bg-[#171512] p-12 text-[#F7F4EE]">
+        <section className="hidden min-h-screen flex-col justify-between bg-[#171512] p-12 text-[#F7F4EE] lg:flex">
           <div>
             <Link
               href="/"
@@ -113,21 +113,26 @@ export default function AdminLoginPage() {
                     fill="#4285F4"
                     d="M21.35 12.27c0-.71-.06-1.39-.18-2.05H12v3.88h5.22a4.46 4.46 0 0 1-1.94 2.93v2.44h3.14c1.84-1.7 2.93-4.21 2.93-7.2Z"
                   />
+
                   <path
                     fill="#34A853"
                     d="M12 21.75c2.63 0 4.84-.87 6.45-2.35l-3.14-2.44c-.87.58-1.98.92-3.31.92-2.54 0-4.69-1.72-5.46-4.03H3.3v2.52A9.75 9.75 0 0 0 12 21.75Z"
                   />
+
                   <path
                     fill="#FBBC05"
                     d="M6.54 13.85a5.86 5.86 0 0 1 0-3.7V7.63H3.3a9.75 9.75 0 0 0 0 8.74l3.24-2.52Z"
                   />
+
                   <path
                     fill="#EA4335"
                     d="M12 6.12c1.43 0 2.72.49 3.73 1.46l2.8-2.8C16.83 3.18 14.63 2.25 12 2.25a9.75 9.75 0 0 0-8.7 5.38l3.24 2.52C7.31 7.84 9.46 6.12 12 6.12Z"
                   />
                 </svg>
 
-                {loading ? "Signing in..." : "Continue with Google"}
+                {loading
+                  ? "Signing in..."
+                  : "Continue with Google"}
               </button>
 
               {error && (
@@ -155,7 +160,6 @@ export default function AdminLoginPage() {
 
           </div>
         </section>
-
       </div>
     </main>
   );

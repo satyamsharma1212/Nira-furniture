@@ -118,6 +118,23 @@ function getPaymentStatusClasses(status: string) {
   }
 }
 
+function getReturnStatusClasses(status: string) {
+  switch (status) {
+    case "approved":
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+
+    case "completed":
+      return "border-blue-200 bg-blue-50 text-blue-700";
+
+    case "rejected":
+    case "cancelled":
+      return "border-red-200 bg-red-50 text-red-700";
+
+    default:
+      return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+}
+
 function getStatusIcon(status: string) {
   switch (status) {
     case "delivered":
@@ -225,12 +242,183 @@ export default async function AdminOrderDetailsPage({
 
   const items = orderItems ?? [];
 
+  /* =========================================================
+     GET CUSTOMER RETURN REQUEST
+  ========================================================= */
+
+  const {
+    data: returnRequest,
+    error: returnRequestError,
+  } = await supabase
+    .from("return_requests")
+    .select("*")
+    .eq("order_id", order.id)
+    .order("created_at", {
+      ascending: false,
+    })
+    .limit(1)
+    .maybeSingle();
+
+  if (returnRequestError) {
+    console.error(
+      "Return request fetch error:",
+      returnRequestError,
+    );
+  }
+
   const totalItems = items.reduce(
     (total, item) =>
       total +
       Number(item.quantity ?? 0),
     0,
   );
+
+  /* =========================================================
+     RETURN REQUEST MANAGEMENT
+  ========================================================= */
+
+  async function updateReturnRequest(
+    formData: FormData,
+  ) {
+    "use server";
+
+    const returnRequestId = String(
+      formData.get("return_request_id") || "",
+    );
+
+    const action = String(
+      formData.get("return_action") || "",
+    );
+
+    const adminNote = String(
+      formData.get("admin_note") || "",
+    ).trim();
+
+    if (
+      !returnRequestId ||
+      !["approve", "reject", "complete", "cancel"].includes(
+        action,
+      )
+    ) {
+      return;
+    }
+
+    const client = await createClient();
+
+    const {
+      data: {
+        user: currentUser,
+      },
+    } = await client.auth.getUser();
+
+    if (!currentUser) {
+      redirect("/admin/login");
+    }
+
+    const { data: currentAdmin } = await client
+      .from("admin_users")
+      .select("id")
+      .eq("id", currentUser.id)
+      .maybeSingle();
+
+    if (!currentAdmin) {
+      redirect("/account");
+    }
+
+    const { data: request, error: requestError } =
+      await client
+        .from("return_requests")
+        .select("id, order_id, status")
+        .eq("id", returnRequestId)
+        .maybeSingle();
+
+    if (requestError || !request) {
+      throw new Error(
+        requestError?.message ||
+          "Return request not found.",
+      );
+    }
+
+    let nextStatus = "";
+
+    if (action === "approve") {
+      if (request.status !== "pending") {
+        throw new Error(
+          "Only pending return requests can be approved.",
+        );
+      }
+
+      nextStatus = "approved";
+    }
+
+    if (action === "reject") {
+      if (request.status !== "pending") {
+        throw new Error(
+          "Only pending return requests can be rejected.",
+        );
+      }
+
+      nextStatus = "rejected";
+    }
+
+    if (action === "complete") {
+      if (request.status !== "approved") {
+        throw new Error(
+          "Only approved return requests can be completed.",
+        );
+      }
+
+      nextStatus = "completed";
+    }
+
+    if (action === "cancel") {
+      if (
+        request.status === "completed" ||
+        request.status === "cancelled"
+      ) {
+        throw new Error(
+          "This return request can no longer be cancelled.",
+        );
+      }
+
+      nextStatus = "cancelled";
+    }
+
+    const { error: updateError } = await client
+      .from("return_requests")
+      .update({
+        status: nextStatus,
+        ...(adminNote
+          ? { admin_note: adminNote }
+          : {}),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", returnRequestId);
+
+    if (updateError) {
+      throw new Error(updateError.message);
+    }
+
+    // When the return is completed, also mark the order returned.
+    if (nextStatus === "completed") {
+      const { error: orderUpdateError } =
+        await client
+          .from("orders")
+          .update({
+            order_status: "returned",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", request.order_id);
+
+      if (orderUpdateError) {
+        throw new Error(orderUpdateError.message);
+      }
+    }
+
+    redirect(
+      `/admin/orders/${request.order_id}`,
+    );
+  }
 
   /* =========================================================
      UPDATE ORDER STATUS
@@ -710,6 +898,375 @@ export default async function AdminOrderDetailsPage({
             </div>
           )}
         </section>
+
+        {/* =====================================================
+            RETURN REQUEST
+        ====================================================== */}
+
+        {returnRequest && (
+          <section className="mt-6 overflow-hidden border border-[#765A32]/20 bg-white">
+            <div className="flex flex-col gap-4 border-b border-[#171512]/10 px-6 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+              <div>
+                <p className="mb-2 font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-[#765A32]">
+                  Customer Request
+                </p>
+
+                <h2 className="font-serif text-2xl font-semibold text-[#171512]">
+                  Return Request
+                </h2>
+
+                <p className="mt-1 text-xs text-[#171512]/40">
+                  Submitted on{" "}
+                  {formatDate(returnRequest.created_at)}
+                </p>
+              </div>
+
+              <span
+                className={`
+                  inline-flex
+                  w-fit
+                  items-center
+                  gap-2
+                  rounded-full
+                  border
+                  px-4
+                  py-2
+                  font-sans
+                  text-[9px]
+                  font-bold
+                  uppercase
+                  tracking-[0.15em]
+                  ${getReturnStatusClasses(
+                    returnRequest.status,
+                  )}
+                `}
+              >
+                {formatStatus(returnRequest.status)}
+              </span>
+            </div>
+
+            <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1fr_1.2fr]">
+              <div className="space-y-5">
+                <div className="border border-[#765A32]/10 bg-[#FBF9F3] p-5">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.17em] text-[#765A32]">
+                    Reason for Return
+                  </p>
+
+                  <p className="mt-2 text-sm font-medium leading-6 text-[#171512]/75">
+                    {returnRequest.reason || "—"}
+                  </p>
+                </div>
+
+                <div className="border border-[#171512]/10 bg-[#FAF8F2] p-5">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.17em] text-[#171512]/40">
+                    Customer Description
+                  </p>
+
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-[#171512]/65">
+                    {returnRequest.description?.trim() ||
+                      "No additional details were provided by the customer."}
+                  </p>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <InfoBlock
+                    label="Request Status"
+                    value={formatStatus(returnRequest.status)}
+                  />
+
+                  <InfoBlock
+                    label="Requested On"
+                    value={formatDate(returnRequest.created_at)}
+                  />
+
+                  <InfoBlock
+                    label="Last Updated"
+                    value={formatDate(returnRequest.updated_at)}
+                  />
+
+                  <InfoBlock
+                    label="Order Status"
+                    value={formatStatus(order.order_status)}
+                  />
+                </div>
+
+                {returnRequest.admin_note && (
+                  <div className="border border-[#765A32]/15 bg-[#FBF9F3] p-5">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.17em] text-[#765A32]">
+                      Admin Note
+                    </p>
+
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-[#171512]/65">
+                      {returnRequest.admin_note}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="border border-[#171512]/10 bg-[#FAF8F2]">
+                <div className="border-b border-[#171512]/10 px-5 py-4">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.17em] text-[#765A32]">
+                    Products in This Return
+                  </p>
+
+                  <p className="mt-1 text-xs text-[#171512]/40">
+                    {items.length}{" "}
+                    {items.length === 1 ? "product" : "products"}{" "}
+                    • {totalItems}{" "}
+                    {totalItems === 1 ? "unit" : "units"}
+                  </p>
+                </div>
+
+                <div className="divide-y divide-[#171512]/10">
+                  {items.map((item) => (
+                    <div
+                      key={`return-${item.id}`}
+                      className="flex items-center gap-4 px-5 py-4"
+                    >
+                      <div className="h-16 w-16 shrink-0 overflow-hidden bg-[#F3F0E9]">
+                        {item.product_image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={item.product_image_url}
+                            alt={item.product_name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center font-serif text-lg text-[#765A32]/50">
+                            N
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="font-serif text-lg font-medium leading-tight text-[#171512]">
+                          {item.product_name}
+                        </p>
+
+                        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-[#171512]/40">
+                          <span>Qty: {item.quantity}</span>
+
+                          <span>
+                            {formatMoney(
+                              item.unit_price,
+                              order.currency,
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* =================================================
+                ADMIN RETURN ACTIONS
+            ================================================= */}
+
+            <div className="border-t border-[#171512]/10 bg-[#FBF9F3] px-6 py-6 sm:px-8">
+              <div className="mb-5">
+                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#765A32]">
+                  Admin Action
+                </p>
+
+                <p className="mt-2 text-sm leading-6 text-[#171512]/50">
+                  Manage this customer's return request from here.
+                </p>
+              </div>
+
+              {returnRequest.status === "pending" && (
+                <div className="grid gap-4 lg:grid-cols-[1fr_auto_auto]">
+                  <form action={updateReturnRequest}>
+                    <input
+                      type="hidden"
+                      name="return_request_id"
+                      value={returnRequest.id}
+                    />
+
+                    <input
+                      type="hidden"
+                      name="return_action"
+                      value="approve"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="admin_note"
+                      value="Return request approved by admin."
+                    />
+
+                    <button
+                      type="submit"
+                      className="inline-flex h-12 w-full items-center justify-center gap-2 bg-[#765A32] px-6 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[#171512]"
+                    >
+                      <CheckCircle2 size={15} />
+                      Approve Return
+                    </button>
+                  </form>
+
+                  <form
+                    action={updateReturnRequest}
+                    className="lg:min-w-[170px]"
+                  >
+                    <input
+                      type="hidden"
+                      name="return_request_id"
+                      value={returnRequest.id}
+                    />
+
+                    <input
+                      type="hidden"
+                      name="return_action"
+                      value="reject"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="admin_note"
+                      value="Return request rejected by admin."
+                    />
+
+                    <button
+                      type="submit"
+                      className="inline-flex h-12 w-full items-center justify-center gap-2 border border-red-200 bg-white px-6 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-red-700 transition hover:border-red-700 hover:bg-red-50"
+                    >
+                      <XCircle size={15} />
+                      Reject Return
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {returnRequest.status === "approved" && (
+                <div className="grid gap-4 lg:grid-cols-[1fr_auto]">
+                  <div className="flex items-center border border-emerald-200 bg-emerald-50 px-5 py-4">
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-emerald-700">
+                        Return Approved
+                      </p>
+
+                      <p className="mt-1 text-sm text-emerald-800/70">
+                        The customer return has been approved.
+                        Complete it once the returned product has
+                        been received and processed.
+                      </p>
+                    </div>
+                  </div>
+
+                  <form action={updateReturnRequest}>
+                    <input
+                      type="hidden"
+                      name="return_request_id"
+                      value={returnRequest.id}
+                    />
+
+                    <input
+                      type="hidden"
+                      name="return_action"
+                      value="complete"
+                    />
+
+                    <input
+                      type="hidden"
+                      name="admin_note"
+                      value="Return completed and product received."
+                    />
+
+                    <button
+                      type="submit"
+                      className="inline-flex h-12 w-full items-center justify-center gap-2 bg-[#171512] px-7 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[#765A32] lg:w-auto"
+                    >
+                      <CheckCircle2 size={15} />
+                      Complete Return
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {returnRequest.status === "rejected" && (
+                <div className="flex items-center gap-3 border border-red-200 bg-red-50 px-5 py-4">
+                  <XCircle
+                    size={18}
+                    className="shrink-0 text-red-700"
+                  />
+
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-red-700">
+                      Return Rejected
+                    </p>
+
+                    <p className="mt-1 text-sm text-red-800/70">
+                      This return request has been rejected.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {returnRequest.status === "completed" && (
+                <div className="flex items-center gap-3 border border-blue-200 bg-blue-50 px-5 py-4">
+                  <CheckCircle2
+                    size={18}
+                    className="shrink-0 text-blue-700"
+                  />
+
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-blue-700">
+                      Return Completed
+                    </p>
+
+                    <p className="mt-1 text-sm text-blue-800/70">
+                      The return has been completed and the order
+                      has been marked as returned.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {returnRequest.status !== "completed" &&
+                returnRequest.status !== "rejected" &&
+                returnRequest.status !== "cancelled" && (
+                  <form
+                    action={updateReturnRequest}
+                    className="mt-5"
+                  >
+                    <input
+                      type="hidden"
+                      name="return_request_id"
+                      value={returnRequest.id}
+                    />
+
+                    <input
+                      type="hidden"
+                      name="return_action"
+                      value="cancel"
+                    />
+
+                    <label
+                      htmlFor={`admin-note-${returnRequest.id}`}
+                      className="mb-2 block text-[9px] font-bold uppercase tracking-[0.18em] text-[#171512]/40"
+                    >
+                      Admin Note
+                    </label>
+
+                    <textarea
+                      id={`admin-note-${returnRequest.id}`}
+                      name="admin_note"
+                      rows={3}
+                      placeholder="Add a note about the return..."
+                      className="w-full resize-none border border-[#171512]/15 bg-white px-4 py-3 text-sm text-[#171512] outline-none placeholder:text-[#171512]/25 focus:border-[#765A32]"
+                    />
+
+                    <p className="mt-2 text-[10px] text-[#171512]/35">
+                      The note will be saved when an action is
+                      submitted. Use the buttons above to approve
+                      or reject the request.
+                    </p>
+                  </form>
+                )}
+            </div>
+          </section>
+        )}
 
         {/* =====================================================
             PAYMENT + ORDER SUMMARY
