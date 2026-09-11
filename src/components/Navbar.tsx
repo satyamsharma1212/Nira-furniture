@@ -7,7 +7,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { products } from "@/data/products";
 import NavbarClient from "./NavbarClient";
 
-const LOGO_URL = "/nira-logo3.png";
+const LOGO_URL = "/nira-logo.png";
 
 const collectionItems = [
   {
@@ -217,21 +217,24 @@ export default function Navbar() {
             hover:opacity-70
           "
         >
-          <Image
-            src={LOGO_URL}
-            alt="NIRA Furniture"
-            width={110}
-            height={50}
-            priority
-            className="
-              h-auto
-              w-[82px]
-              object-contain
-              sm:w-[88px]
-              md:w-[94px]
-              lg:w-[96px]
-            "
-          />
+        <Image
+  src={LOGO_URL}
+  alt="NIRA Furniture"
+  width={90}
+  height={90}
+  priority
+  className="
+    h-[64px]
+    w-[64px]
+    object-contain
+    sm:h-[68px]
+    sm:w-[68px]
+    md:h-[72px]
+    md:w-[72px]
+    lg:h-[74px]
+    lg:w-[74px]
+  "
+/>
         </Link>
 
         {/* =================================================== */}

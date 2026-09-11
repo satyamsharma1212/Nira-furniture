@@ -365,7 +365,7 @@ export default function Hero() {
             </Link>
 
             <Link
-              href="/custom-furniture"
+              href="/enquiry"
               className="
                 inline-flex
                 h-11

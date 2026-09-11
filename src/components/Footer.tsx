@@ -104,19 +104,18 @@ export default function Footer() {
                   gap-4
                 "
               >
-                <Image
-                  src="/nira-logo3.png"
-                  alt="NIRA Furniture"
-                  width={100}
-                  height={50}
-                  priority
-                  className="
-                    h-auto
-                    w-[76px]
-                    brightness-0
-                    invert
-                  "
-                />
+             <Image
+  src="/nira-logo.png"
+  alt="NIRA Furniture"
+  width={100}
+  height={50}
+  priority
+  className="
+    h-auto
+    w-[76px]
+    object-contain
+  "
+/>
 
                 <span
                   className="
@@ -361,76 +360,13 @@ export default function Footer() {
                 {/* PRIVATE APPOINTMENT */}
 
                 <div>
-                  <p
-                    className="
-                      mb-1.5
-                      font-sans
-                      text-[9px]
-                      font-semibold
-                      uppercase
-                      tracking-[0.16em]
-                      text-[#D0B27A]/70
-                    "
-                  >
-                    Private Appointments
-                  </p>
-
-                  <Link
-                    href="/contact"
-                    className="
-                      inline-flex
-                      items-center
-                      gap-2
-                      font-sans
-                      text-[13px]
-                      font-medium
-                      text-white/60
-                      transition-colors
-                      hover:text-[#D0B27A]
-                    "
-                  >
-                    Request an Appointment
-
-                    <ArrowUpRight
-                      size={11}
-                      strokeWidth={1}
-                    />
-                  </Link>
+           
+                
                 </div>
 
                 {/* ENQUIRY BUTTON */}
 
-                <Link
-                  href="/contact"
-                  className="
-                    mt-1
-                    inline-flex
-                    items-center
-                    gap-2
-                    border
-                    border-[#D0B27A]/25
-                    px-4
-                    py-2.5
-                    font-sans
-                    text-[10px]
-                    font-semibold
-                    uppercase
-                    tracking-[0.16em]
-                    text-[#D0B27A]
-                    transition-all
-                    duration-300
-                    hover:border-[#D0B27A]
-                    hover:bg-[#D0B27A]
-                    hover:text-[#171310]
-                  "
-                >
-                  Private Enquiry
-
-                  <ArrowUpRight
-                    size={11}
-                    strokeWidth={1.1}
-                  />
-                </Link>
+               
 
               </div>
 

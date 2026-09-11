@@ -272,12 +272,13 @@ export default function NavbarClient({
        * outside the search button and search panel,
        * immediately close the search.
        *
-       * This works for:
+       * Works for:
        * - Mouse click
        * - Touch
        * - Pen
        * - Starting a drag/swipe
        */
+
       if (
         !clickedSearchButton &&
         !clickedSearchPanel
@@ -351,6 +352,14 @@ export default function NavbarClient({
       ====================================================== */}
 
       <div className="flex items-center gap-2 sm:gap-3">
+
+        {/* =================================================
+            DESKTOP ENQUIRE BUTTON
+            Visible only when full desktop navbar is visible
+        ================================================== */}
+
+    
+
 
         {/* =================================================
             WISHLIST
@@ -442,7 +451,37 @@ export default function NavbarClient({
             />
           )}
         </button>
-
+  <Link
+  href="/enquiry"
+  aria-label="Enquire Now"
+  className="
+    hidden
+    xl:inline-flex
+    h-11
+    shrink-0
+    items-center
+    justify-center
+    gap-2
+    border
+    border-[#765A32]
+    bg-[#765A32]
+    px-5
+    font-sans
+    text-[9px]
+    font-semibold
+    uppercase
+    tracking-[0.16em]
+    text-white
+    transition-all
+    duration-300
+    hover:border-[#765A32]
+    hover:bg-[#765A32]
+    hover:tracking-[0.19em]
+  "
+>
+  Enquire Now
+</Link>
+       
         {/* =================================================
             MOBILE MENU
         ================================================== */}
@@ -651,7 +690,14 @@ export default function NavbarClient({
                   </div>
                 ) : (
                   <div className="px-3 py-6 text-center">
-                    <p className="font-sans text-[13px] font-medium text-[#8A8174]">
+                    <p
+                      className="
+                        font-sans
+                        text-[13px]
+                        font-medium
+                        text-[#8A8174]
+                      "
+                    >
                       No furniture found.
                     </p>
                   </div>
@@ -1161,7 +1207,7 @@ export default function NavbarClient({
 
                   <div className="mb-5 h-px bg-[#171512]/10" />
 
-                  {/* ENQUIRE NOW — MOBILE MENU ONLY */}
+                  {/* ENQUIRE NOW — MOBILE MENU */}
 
                   <Link
                     href="/enquiry"
