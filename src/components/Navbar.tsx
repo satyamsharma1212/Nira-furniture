@@ -603,10 +603,9 @@ function AnnouncementSet({
         ◆
       </span>
 
-      <span>
-        Use Code &apos;ROYAL10&apos; for Privileged
-        Inaugural 10% Savings
-      </span>
+    <span>
+  Timeless Furniture Crafted for Exceptional Living
+</span>
 
       <span className="text-[#D0B27A]">
         ◆

@@ -2,17 +2,41 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+) {
   const url = new URL(request.url);
 
   const code = url.searchParams.get("code");
+
   const origin = url.origin;
 
   /*
-   * No OAuth code means authentication did not complete.
+   * The `next` parameter is only used for
+   * normal users.
+   *
+   * Admin users will ALWAYS be redirected
+   * to /admin.
    */
+  const next = url.searchParams.get("next");
+
+  const safeNext =
+    next &&
+    next.startsWith("/") &&
+    !next.startsWith("//")
+      ? next
+      : "/account";
+
+  /*
+   * =========================================================
+   * CHECK OAUTH CODE
+   * =========================================================
+   */
+
   if (!code) {
-    console.error("OAuth callback: missing code");
+    console.error(
+      "OAuth callback: missing authorization code",
+    );
 
     return NextResponse.redirect(
       `${origin}/login?error=${encodeURIComponent(
@@ -22,22 +46,32 @@ export async function GET(request: NextRequest) {
   }
 
   /*
-   * We initially create the response that will eventually
-   * redirect the user.
+   * =========================================================
+   * CREATE REDIRECT RESPONSE
+   * =========================================================
    *
-   * Supabase authentication cookies will be attached
-   * to this response.
+   * IMPORTANT:
+   *
+   * We create the redirect response BEFORE exchanging
+   * the OAuth code so that Supabase session cookies
+   * can be written onto this exact response.
    */
-  let redirectResponse = NextResponse.redirect(
-    `${origin}/`,
-  );
+
+  const redirectResponse =
+    NextResponse.redirect(
+      `${origin}${safeNext}`,
+    );
 
   /*
-   * Create Supabase SSR client.
+   * =========================================================
+   * CREATE SUPABASE SERVER CLIENT
+   * =========================================================
    */
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    process.env
+      .NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
         getAll() {
@@ -46,7 +80,11 @@ export async function GET(request: NextRequest) {
 
         setAll(cookiesToSet) {
           cookiesToSet.forEach(
-            ({ name, value, options }) => {
+            ({
+              name,
+              value,
+              options,
+            }) => {
               redirectResponse.cookies.set(
                 name,
                 value,
@@ -60,19 +98,19 @@ export async function GET(request: NextRequest) {
   );
 
   /*
-   * Exchange the Google OAuth code for a
-   * Supabase authenticated session.
+   * =========================================================
+   * EXCHANGE OAUTH CODE FOR SESSION
+   * =========================================================
    */
+
   const {
     data,
     error,
-  } = await supabase.auth.exchangeCodeForSession(
-    code,
-  );
+  } =
+    await supabase.auth.exchangeCodeForSession(
+      code,
+    );
 
-  /*
-   * Authentication failed.
-   */
   if (error) {
     console.error(
       "OAuth callback error:",
@@ -88,8 +126,11 @@ export async function GET(request: NextRequest) {
   }
 
   /*
-   * Make sure a session and user were created.
+   * =========================================================
+   * VERIFY SESSION
+   * =========================================================
    */
+
   if (!data.session || !data.user) {
     console.error(
       "OAuth callback: session was not created.",
@@ -102,88 +143,97 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const user = data.user;
+
+  console.log(
+    "OAuth login successful:",
+    user.email,
+  );
+
   /*
-   * ========================================================
-   * CHECK WHETHER THIS USER IS AN ADMIN
-   * ========================================================
+   * =========================================================
+   * CHECK ADMIN
+   * =========================================================
    *
-   * Your admin_users table uses the authenticated user's
-   * Supabase Auth ID.
+   * An admin is identified by the user's ID existing
+   * in public.admin_users.
    */
+
   const {
     data: admin,
     error: adminError,
   } = await supabase
     .from("admin_users")
     .select("id")
-    .eq("id", data.user.id)
+    .eq("id", user.id)
     .maybeSingle();
 
-  /*
-   * If the admin lookup itself fails, don't accidentally
-   * treat the user as an admin.
-   */
   if (adminError) {
     console.error(
-      "Admin check error:",
+      "Admin lookup error:",
       adminError,
     );
+
+    /*
+     * If the admin lookup fails, do NOT accidentally
+     * grant admin access.
+     *
+     * Treat the user as a normal user.
+     */
+
+    redirectResponse.headers.set(
+      "Location",
+      `${origin}${safeNext}`,
+    );
+
+    return redirectResponse;
   }
 
-  /*
-   * ========================================================
-   * REDIRECT
-   * ========================================================
-   *
-   * Admin     → /admin
-   * Normal    → /
-   */
-  const destination = admin
-    ? "/admin"
-    : "/";
-
-  /*
-   * Create the final redirect response.
-   *
-   * IMPORTANT:
-   * We need to preserve the Supabase cookies that were
-   * already attached to redirectResponse.
-   */
-  redirectResponse = NextResponse.redirect(
-    `${origin}${destination}`,
-  );
-
-  /*
-   * The response above is newly created, so we need to
-   * make sure the authentication cookies are attached to
-   * this final response as well.
-   *
-   * Read the current Supabase session cookies from the
-   * response created during the OAuth exchange.
-   */
-  const cookies = redirectResponse.cookies;
-
-  /*
-   * NOTE:
-   * The Supabase client may have already set cookies on the
-   * original response. To guarantee the session is preserved,
-   * use a dedicated response from the beginning based on the
-   * destination.
-   */
-
-  console.log(
-    "OAuth login successful:",
-    data.user.email,
-  );
+  const isAdmin = Boolean(admin);
 
   console.log(
     "Admin:",
-    Boolean(admin),
+    isAdmin,
   );
+
+  /*
+   * =========================================================
+   * DETERMINE FINAL DESTINATION
+   * =========================================================
+   *
+   * ADMIN:
+   *     Always /admin
+   *
+   * NORMAL USER:
+   *     Use ?next= if it is a safe internal path.
+   */
+
+  const destination = isAdmin
+    ? "/admin"
+    : safeNext;
 
   console.log(
     "Redirecting to:",
     destination,
+  );
+
+  /*
+   * =========================================================
+   * UPDATE LOCATION ON SAME RESPONSE
+   * =========================================================
+   *
+   * IMPORTANT:
+   *
+   * Do NOT create another NextResponse.redirect here.
+   *
+   * The existing redirectResponse contains the Supabase
+   * authentication cookies created during
+   * exchangeCodeForSession().
+   */
+
+  redirectResponse.headers.set(
+    "Location",
+    `${origin}${destination}`,
   );
 
   return redirectResponse;

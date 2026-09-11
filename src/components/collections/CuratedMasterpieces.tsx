@@ -10,8 +10,6 @@ import {
 type Masterpiece = {
   name: string;
   material: string;
-  price: string;
-  financing?: string;
   shipping?: string;
   image: string;
   badge?: string;
@@ -36,12 +34,8 @@ const masterpieces: Masterpiece[] = [
     material:
       "Aged Weathered Teak & Hand-Woven Weatherproof Cord",
 
-    price: "$14,800",
-
-    financing:
-      "or $1,233/mo concierge financing",
-
-    image: "/Images/Nira-ArmChair.jpeg",
+    image:
+      "https://images.unsplash.com/photo-1786654026766-8c6422fcbb84?auto=format&fit=crop&fm=jpg&q=85&w=1600",
 
     badge: "OUTDOOR SANCTUARY",
 
@@ -61,18 +55,23 @@ const masterpieces: Masterpiece[] = [
       "Crafted for premium outdoor environments",
     ],
 
-    seating: "2 Lounge Chairs + 1 Coffee Table",
+    seating:
+      "2 Lounge Chairs + 1 Coffee Table",
 
-    style: "Luxury Contemporary",
+    style:
+      "Luxury Contemporary",
 
-    collection: "Outdoor Sanctuary",
+    collection:
+      "Outdoor Sanctuary",
 
-    color: "Natural Teak & Warm Ivory",
+    color:
+      "Natural Teak & Warm Ivory",
 
     alt:
-      "NIRA Furniture Amali Sovereign Outdoor Lounge Suite with Teak Lounge Chairs and Coffee Table",
+      "NIRA Furniture luxury outdoor lounge chairs and coffee table on a stone patio",
 
-    slug: "amali-sovereign-outdoor-lounge-suite",
+    slug:
+      "amali-sovereign-outdoor-lounge-suite",
   },
 
   {
@@ -81,18 +80,16 @@ const masterpieces: Masterpiece[] = [
     material:
       "Weathered Teak & Hand-Woven Weatherproof Rope",
 
-    price: "$18,500",
-
-    financing:
-      "or $1,542/mo concierge financing",
-
-    image: "/Images/Nira-Outdoor-Lounge.jpeg",
+    image:
+      "https://images.unsplash.com/photo-1776186243330-1cbe52d10509?auto=format&fit=crop&fm=jpg&q=85&w=1600",
 
     badge: "OUTDOOR SANCTUARY",
 
-    category: "Outdoor Furniture",
+    category:
+      "Outdoor Furniture",
 
-    subcategory: "Outdoor Lounge Sets",
+    subcategory:
+      "Outdoor Lounge Sets",
 
     description:
       "An expansive outdoor lounge collection designed for sophisticated alfresco entertaining. The Amali Grand combines warm teak accents with hand-woven weatherproof rope and plush light-toned cushions, creating a refined yet inviting setting for luxury terraces, gardens, and outdoor living spaces.",
@@ -111,16 +108,20 @@ const masterpieces: Masterpiece[] = [
     seating:
       "L-Shaped Sectional Sofa + 2 Lounge Chairs + Accent Tables",
 
-    style: "Luxury Contemporary",
+    style:
+      "Luxury Contemporary",
 
-    collection: "Outdoor Sanctuary",
+    collection:
+      "Outdoor Sanctuary",
 
-    color: "Natural Teak, Charcoal Rope & Ivory",
+    color:
+      "Natural Teak, Charcoal Rope & Ivory",
 
     alt:
-      "NIRA Furniture luxury outdoor sectional lounge set with teak and woven rope seating",
+      "NIRA Furniture luxury outdoor lounge chairs and table surrounded by greenery",
 
-    slug: "amali-grand-outdoor-lounge-collection",
+    slug:
+      "amali-grand-outdoor-lounge-collection",
   },
 
   {
@@ -129,18 +130,16 @@ const masterpieces: Masterpiece[] = [
     material:
       "Hand-Woven Weatherproof Rattan & Natural Teak",
 
-    price: "$6,800",
-
-    financing:
-      "or $567/mo concierge financing",
-
-    image: "/Images/Nira-Hanging-Swing.jpeg",
+    image:
+      "https://images.unsplash.com/photo-1645142955215-9b6ad786c05a?auto=format&fit=crop&fm=jpg&q=85&w=1600",
 
     badge: "OUTDOOR SANCTUARY",
 
-    category: "Outdoor Furniture",
+    category:
+      "Outdoor Furniture",
 
-    subcategory: "Hanging Swing Sofas",
+    subcategory:
+      "Hanging Swing Sofas",
 
     description:
       "A beautifully crafted hanging swing sofa designed to bring resort-inspired comfort to outdoor spaces. The Amali Haven combines hand-woven weatherproof rattan with warm natural teak detailing and plush cushions, creating an inviting retreat for relaxed outdoor living.",
@@ -155,18 +154,23 @@ const masterpieces: Masterpiece[] = [
       "Resort-inspired luxury design",
     ],
 
-    seating: "2–3 Person Hanging Swing Sofa",
+    seating:
+      "2–3 Person Hanging Swing Sofa",
 
-    style: "Luxury Resort Contemporary",
+    style:
+      "Luxury Resort Contemporary",
 
-    collection: "Outdoor Sanctuary",
+    collection:
+      "Outdoor Sanctuary",
 
-    color: "Natural Rattan, Teak & Sage Green",
+    color:
+      "Natural Rattan, Teak & Sage Green",
 
     alt:
-      "NIRA Furniture luxury outdoor hanging swing sofa with woven rattan and teak frame",
+      "NIRA Furniture luxury outdoor furniture overlooking a swimming pool",
 
-    slug: "amali-haven-hanging-swing-sofa",
+    slug:
+      "amali-haven-hanging-swing-sofa",
   },
 ];
 
@@ -592,6 +596,7 @@ export default function CuratedMasterpieces() {
                           ease-out
                           group-hover:scale-[1.025]
                         "
+                        quality={85}
                       />
 
                       {/* SOFT IMAGE LIGHT */}
@@ -694,52 +699,16 @@ export default function CuratedMasterpieces() {
                       </h3>
 
                       {/* ================================================= */}
-                      {/* PRICE + BUTTON                                    */}
+                      {/* INQUIRE BUTTON                                    */}
                       {/* ================================================= */}
 
                       <div
                         className="
                           mt-8
                           flex
-                          items-end
-                          justify-between
-                          gap-4
+                          justify-end
                         "
                       >
-                        {/* PRICE */}
-
-                        <div>
-                          <p
-                            className="
-                              font-sans
-                              text-[17px]
-                              font-medium
-                              tracking-[0.02em]
-                              text-[#171717]
-                            "
-                          >
-                            {product.price}
-                          </p>
-
-                          {(product.financing ||
-                            product.shipping) && (
-                            <p
-                              className="
-                                mt-1.5
-                                font-sans
-                                text-[10px]
-                                tracking-[0.02em]
-                                text-[#82776D]
-                              "
-                            >
-                              {product.financing ||
-                                product.shipping}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* INQUIRE */}
-
                         <button
                           type="button"
                           className="

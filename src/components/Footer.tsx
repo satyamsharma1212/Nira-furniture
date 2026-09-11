@@ -6,6 +6,7 @@ import {
   ArrowUpRight,
   Mail,
   MapPin,
+  ShieldCheck,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -73,7 +74,7 @@ export default function Footer() {
         <div className="mx-auto max-w-[1380px]">
 
           {/* =================================================
-              BRAND STATEMENT + JOURNAL
+              BRAND STATEMENT
           ================================================== */}
 
           <div
@@ -157,7 +158,8 @@ export default function Footer() {
                 className="
                   mt-6
                   max-w-[560px]
-                  font-sans     text-[16px]
+                  font-sans
+                  text-[16px]
                   font-medium
                   leading-[1.85]
                   tracking-[0.01em]
@@ -174,11 +176,6 @@ export default function Footer() {
 
             </div>
 
-            {/* =================================================
-                NEWSLETTER
-            ================================================== */}
-
-            
           </div>
 
           {/* =====================================================
@@ -472,56 +469,89 @@ export default function Footer() {
               © 2026 NIRA Furniture · All Rights Reserved
             </p>
 
-          <div
-  className="
-    flex
-    flex-wrap
-    gap-x-5
-    gap-y-2
-    font-sans
-    text-[9px]
-    font-medium
-    uppercase
-    tracking-[0.12em]
-    text-white/25
-    sm:gap-x-6
-  "
->
-  <Link
-    href="/return-refund"
-    className="transition-colors hover:text-white/60"
-  >
-    Returns & Refunds
-  </Link>
+            <div
+              className="
+                flex
+                flex-wrap
+                gap-x-5
+                gap-y-2
+                font-sans
+                text-[9px]
+                font-medium
+                uppercase
+                tracking-[0.12em]
+                text-white/25
+                sm:gap-x-6
+              "
+            >
 
-  <Link
-    href="/shipping-delivery"
-    className="transition-colors hover:text-white/60"
-  >
-    Shipping & Delivery
-  </Link>
+              <Link
+                href="/return-refund"
+                className="transition-colors hover:text-white/60"
+              >
+                Returns & Refunds
+              </Link>
 
-  <Link
-    href="/privacy-policy"
-    className="transition-colors hover:text-white/60"
-  >
-    Privacy Policy
-  </Link>
+              <Link
+                href="/shipping-delivery"
+                className="transition-colors hover:text-white/60"
+              >
+                Shipping & Delivery
+              </Link>
 
-  <Link
-    href="/terms-and-conditions"
-    className="transition-colors hover:text-white/60"
-  >
-    Terms & Conditions
-  </Link>
+              <Link
+                href="/privacy-policy"
+                className="transition-colors hover:text-white/60"
+              >
+                Privacy Policy
+              </Link>
 
-  <Link
-    href="/contact-support"
-    className="transition-colors hover:text-white/60"
-  >
-    Contact & Support
-  </Link>
-</div>
+              <Link
+                href="/terms-and-conditions"
+                className="transition-colors hover:text-white/60"
+              >
+                Terms & Conditions
+              </Link>
+
+              <Link
+                href="/contact-support"
+                className="transition-colors hover:text-white/60"
+              >
+                Contact & Support
+              </Link>
+
+              {/* =================================================
+                  ADMIN LOGIN
+              ================================================== */}
+
+              <Link
+                href="/admin/login"
+                aria-label="Admin Login"
+                className="
+                  group
+                  inline-flex
+                  items-center
+                  gap-1.5
+                  transition-colors
+                  hover:text-[#D0B27A]
+                "
+              >
+                <ShieldCheck
+                  size={11}
+                  strokeWidth={1.2}
+                  className="
+                    text-[#D0B27A]/60
+                    transition-colors
+                    group-hover:text-[#D0B27A]
+                  "
+                />
+
+                <span>
+                  Admin Login
+                </span>
+              </Link>
+
+            </div>
           </div>
 
         </div>
