@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   Check,
   Lock,
+  LogIn,
   ShoppingBag,
 } from "lucide-react";
 
@@ -166,6 +167,9 @@ export default function CheckoutPage() {
   const [userId, setUserId] =
     useState<string | null>(null);
 
+  const [showLoginModal, setShowLoginModal] =
+    useState(false);
+
   /*
    * =========================================================
    * LOAD USER + PROFILE + CHECKOUT
@@ -192,18 +196,14 @@ export default function CheckoutPage() {
         } =
           await supabase.auth.getUser();
 
-        if (userError) {
-          throw new Error(
-            userError.message,
+        if (userError || !user) {
+          console.log(
+            "Checkout requires login:",
+            userError?.message || "No active session",
           );
-        }
 
-        if (!user) {
-          window.location.href =
-            `/login?next=${encodeURIComponent(
-              window.location.pathname +
-                window.location.search,
-            )}`;
+          setShowLoginModal(true);
+          setLoading(false);
 
           return;
         }
@@ -762,7 +762,7 @@ export default function CheckoutPage() {
    * =========================================================
    */
 
-  if (loading) {
+  if (loading && !showLoginModal) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#FAF8F2]">
 
@@ -845,25 +845,105 @@ export default function CheckoutPage() {
             />
 
             <h1 className="mt-6 font-serif text-4xl font-semibold">
-              Your Cart Is Empty
+             You are not login !! 
+             Login first !
             </h1>
 
-            <p className="mt-4 text-sm leading-7 text-[#756B5B]">
-              Add a product before proceeding
-              to checkout.
-            </p>
+           
 
             <Link
-              href="/products"
+              href="/login"
               className="mt-7 inline-flex min-h-12 items-center justify-center bg-[#241F18] px-7 text-[11px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[#B8860B]"
             >
-              Explore Collection
+              Continue to login
             </Link>
 
           </div>
 
         </div>
 
+      </main>
+    );
+  }
+
+  /*
+   * =========================================================
+   * LOGIN REQUIRED MODAL
+   * =========================================================
+   */
+
+  if (showLoginModal) {
+    const currentCheckoutUrl =
+      window.location.pathname +
+      window.location.search;
+
+    return (
+      <main className="relative min-h-screen bg-[#FAF8F2]">
+        <div className="flex min-h-screen items-center justify-center px-5">
+          <div
+            className="fixed inset-0 bg-[#171512]/55 backdrop-blur-[3px]"
+            aria-hidden="true"
+          />
+
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="login-required-title"
+            className="relative z-10 w-full max-w-md border border-[#D8C7A5] bg-[#FAF8F2] p-7 shadow-[0_25px_80px_rgba(36,31,24,0.25)] sm:p-10"
+          >
+            <button
+              type="button"
+              onClick={() => setShowLoginModal(false)}
+              aria-label="Close login popup"
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center text-xl font-light text-[#756B5B] transition hover:text-[#241F18]"
+            >
+              ×
+            </button>
+
+            <div className="mx-auto flex h-14 w-14 items-center justify-center border border-[#B8860B]/30 bg-white text-[#B8860B]">
+              <LogIn size={22} strokeWidth={1.4} />
+            </div>
+
+            <p className="mt-7 text-center text-[9px] font-bold uppercase tracking-[0.28em] text-[#B8860B]">
+              NIRA Furniture
+            </p>
+
+            <h1
+              id="login-required-title"
+              className="mt-3 text-center font-serif text-3xl font-semibold text-[#241F18] sm:text-4xl"
+            >
+              Login First
+            </h1>
+
+            <p className="mx-auto mt-4 max-w-sm text-center text-sm leading-7 text-[#756B5B]"
+            >
+              Please login to continue to checkout and securely place your
+              order.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => {
+                window.location.href =
+                  `/login?next=${encodeURIComponent(
+                    currentCheckoutUrl,
+                  )}`;
+              }}
+              className="mt-8 flex h-12 w-full items-center justify-center gap-3 bg-[#241F18] px-6 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-[#B8860B] hover:tracking-[0.24em]"
+            >
+              <span>Login to Continue</span>
+              <span>→</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowLoginModal(false)}
+              className="mt-5 block w-full text-center text-[9px] font-bold uppercase tracking-[0.16em] text-[#8A8174] transition hover:text-[#241F18]"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
       </main>
     );
   }
