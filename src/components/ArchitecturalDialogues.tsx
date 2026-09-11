@@ -44,6 +44,18 @@ export default function ArchitecturalDialogues() {
     "Fire Lounges",
   ];
 
+  /*
+   * Unsplash images
+   *
+   * These are remote images, so make sure
+   * images.unsplash.com is allowed in next.config.ts.
+   */
+  const indoorImage =
+    "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&fm=jpg&q=85&w=1800";
+
+  const outdoorImage =
+    "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&fm=jpg&q=85&w=1800";
+
   return (
     <section
       className="
@@ -162,7 +174,11 @@ export default function ArchitecturalDialogues() {
               hover:shadow-[0_30px_80px_rgba(35,30,25,0.10)]
             "
           >
-            {/* Indoor Image — NON CLICKABLE */}
+
+            {/* =================================================
+                INDOOR IMAGE
+            ================================================== */}
+
             <div
               className="
                 relative
@@ -173,8 +189,8 @@ export default function ArchitecturalDialogues() {
               "
             >
               <Image
-                src="/Images/nira-furniture-sherpa-fabric-accent-lounge-chair.jpeg"
-                alt="NIRA Furniture Cream Sherpa Fabric Accent Lounge Chair"
+                src={indoorImage}
+                alt="Luxury contemporary indoor living room with refined furniture"
                 fill
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 className="
@@ -186,7 +202,8 @@ export default function ArchitecturalDialogues() {
                 "
               />
 
-              {/* Image Overlay */}
+              {/* IMAGE OVERLAY */}
+
               <div
                 className="
                   pointer-events-none
@@ -199,7 +216,8 @@ export default function ArchitecturalDialogues() {
                 "
               />
 
-              {/* Image Content */}
+              {/* IMAGE CONTENT */}
+
               <div
                 className="
                   absolute
@@ -247,7 +265,10 @@ export default function ArchitecturalDialogues() {
               </div>
             </div>
 
-            {/* Indoor Content */}
+            {/* =================================================
+                INDOOR CONTENT
+            ================================================== */}
+
             <div
               className="
                 px-6
@@ -278,7 +299,8 @@ export default function ArchitecturalDialogues() {
                 and acoustic warmth.
               </p>
 
-              {/* Indoor Tags */}
+              {/* INDOOR TAGS */}
+
               <div
                 className="
                   mt-7
@@ -339,7 +361,11 @@ export default function ArchitecturalDialogues() {
               hover:shadow-[0_30px_80px_rgba(35,30,25,0.10)]
             "
           >
-            {/* Outdoor Image — NON CLICKABLE */}
+
+            {/* =================================================
+                OUTDOOR IMAGE
+            ================================================== */}
+
             <div
               className="
                 relative
@@ -350,8 +376,8 @@ export default function ArchitecturalDialogues() {
               "
             >
               <Image
-                src="/Images/NIRA Furniture Outdoor Wicker Lounge Chairs and Coffee Table.jpeg"
-                alt="Outdoor Living — Luxury Wicker Lounge Chairs & Coffee Table — NIRA Furniture"
+                src={outdoorImage}
+                alt="Luxury outdoor terrace with refined contemporary furniture"
                 fill
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 className="
@@ -363,7 +389,8 @@ export default function ArchitecturalDialogues() {
                 "
               />
 
-              {/* Image Overlay */}
+              {/* IMAGE OVERLAY */}
+
               <div
                 className="
                   pointer-events-none
@@ -376,7 +403,8 @@ export default function ArchitecturalDialogues() {
                 "
               />
 
-              {/* Image Content */}
+              {/* IMAGE CONTENT */}
+
               <div
                 className="
                   absolute
@@ -424,7 +452,10 @@ export default function ArchitecturalDialogues() {
               </div>
             </div>
 
-            {/* Outdoor Content */}
+            {/* =================================================
+                OUTDOOR CONTENT
+            ================================================== */}
+
             <div
               className="
                 px-6
@@ -455,7 +486,8 @@ export default function ArchitecturalDialogues() {
                 elements while elevating exterior architecture.
               </p>
 
-              {/* Outdoor Tags */}
+              {/* OUTDOOR TAGS */}
+
               <div
                 className="
                   mt-7
