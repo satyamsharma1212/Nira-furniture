@@ -38,13 +38,13 @@ export default function CollectionsHero({
             flex-wrap
             items-center
             gap-3
-            text-[10px]
+            text-[12px]
             font-medium
             uppercase
             tracking-[0.18em]
             text-[#171512]/45
             sm:mb-8
-            sm:text-[11px]
+            sm:text-[13px]
           "
         >
           <Link
@@ -83,16 +83,17 @@ export default function CollectionsHero({
         >
           {/* Left */}
           <div>
+
             {/* Eyebrow */}
             <p
               className="
-                mb-4
-                text-[10px]
+                mb-5
+                text-[12px]
                 font-medium
                 uppercase
                 tracking-[0.25em]
                 text-[#765A32]
-                sm:text-[11px]
+                sm:text-[13px]
               "
             >
               Architectural Masterworks
@@ -123,14 +124,14 @@ export default function CollectionsHero({
             {/* Description */}
             <p
               className="
-                mt-6
+                mt-7
                 max-w-[680px]
-                text-[17px]
-                leading-[1.65]
+                text-[18px]
+                leading-[1.7]
                 text-[#171512]/55
-                sm:mt-7
-                sm:text-[18px]
-                lg:text-[19px]
+                sm:mt-8
+                sm:text-[19px]
+                lg:text-[20px]
               "
             >
               Handcrafted furniture shaped by natural teak, honed travertine,
@@ -149,10 +150,11 @@ export default function CollectionsHero({
               gap-4
               lg:flex-col
               lg:items-end
-              lg:gap-3
+              lg:gap-4
               lg:pb-3
             "
           >
+
             {/* Availability */}
             <div
               className="
@@ -161,14 +163,14 @@ export default function CollectionsHero({
                 gap-3
                 rounded-full
                 bg-[#EEEAE2]
-                px-4
-                py-2.5
+                px-5
+                py-3
               "
             >
               <span
                 className="
-                  h-2
-                  w-2
+                  h-2.5
+                  w-2.5
                   animate-pulse
                   rounded-full
                   bg-[#765A32]
@@ -177,12 +179,12 @@ export default function CollectionsHero({
 
               <span
                 className="
-                  text-[9px]
+                  text-[15px]
                   font-medium
                   uppercase
                   tracking-[0.14em]
                   text-[#765A32]
-                  sm:text-[10px]
+                  sm:text-[13px]
                 "
               >
                 Atelier Guild Capacity: Available
@@ -193,10 +195,10 @@ export default function CollectionsHero({
             <span
               className="
                 whitespace-nowrap
-                text-[11px]
+                text-[14px]
                 tracking-[0.07em]
                 text-[#171512]/70
-                sm:text-[12px]
+                sm:text-[13px]
               "
             >
               {itemCount} Bespoke Pieces

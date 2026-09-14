@@ -14,14 +14,7 @@ const collectionItems = [
     label: "All Collections",
     href: "/collections",
   },
-  {
-    label: "Indoor Furniture",
-    href: "/collections/indoor-furniture",
-  },
-  {
-    label: "Outdoor Furniture",
-    href: "/collections/outdoor-furniture",
-  },
+ 
   {
     label: "Seating",
     href: "/collections/seating",
@@ -149,34 +142,7 @@ export default function Navbar() {
         ${showNavbar ? "translate-y-0" : "-translate-y-full"}
       `}
     >
-      {/* ===================================================== */}
-      {/* ANNOUNCEMENT BAR                                      */}
-      {/* ===================================================== */}
 
-      <div
-        className="
-          h-[39px]
-          w-full
-          overflow-hidden
-          border-b
-          border-[#D0B27A]/30
-          bg-[#171512]
-        "
-      >
-        <div
-          className="
-            flex
-            h-full
-            w-max
-            animate-navbar-marquee
-            items-center
-            whitespace-nowrap
-          "
-        >
-          <AnnouncementSet />
-          <AnnouncementSet leadingDiamond />
-        </div>
-      </div>
 
       {/* ===================================================== */}
       {/* MAIN NAVBAR                                           */}
@@ -185,19 +151,34 @@ export default function Navbar() {
       <nav
         className="
           relative
-          mx-auto
+          mx-2
+          mt-2
           flex
-          h-[72px]
-          w-full
+          h-[70px]
+          w-[calc(100%-1rem)]
           items-center
-          border-b
-          border-black/10
-          bg-[#eeeae4]/95
+          rounded-[18px]
+          border
+          border-[#B88A2B]/12
+          bg-[#eeeae4]/90
           px-4
-          backdrop-blur-md
+          shadow-[0_8px_30px_rgba(36,31,24,0.06)]
+          backdrop-blur-xl
+          backdrop-saturate-150
+          transition-all
+          duration-500
+          sm:mx-3
+          sm:w-[calc(100%-1.5rem)]
+          sm:rounded-[20px]
           sm:px-5
+          md:mx-4
+          md:w-[calc(100%-2rem)]
           md:px-7
+          lg:mx-5
+          lg:w-[calc(100%-2.5rem)]
           lg:px-9
+          xl:mx-6
+          xl:w-[calc(100%-3rem)]
           xl:px-10
         "
       >
@@ -209,52 +190,59 @@ export default function Navbar() {
           href="/"
           aria-label="NIRA Furniture Home"
           className="
+            group
             flex
             shrink-0
             items-center
-            transition-opacity
-            duration-300
-            hover:opacity-70
+            py-1
           "
         >
-        <Image
-  src={LOGO_URL}
-  alt="NIRA Furniture"
-  width={90}
-  height={90}
-  priority
-  className="
-    h-[64px]
-    w-[64px]
-    object-contain
-    sm:h-[68px]
-    sm:w-[68px]
-    md:h-[72px]
-    md:w-[72px]
-    lg:h-[74px]
-    lg:w-[74px]
-  "
-/>
+          <Image
+            src={LOGO_URL}
+            alt="NIRA Furniture"
+            width={90}
+            height={90}
+            priority
+            className="
+              h-[58px]
+              w-[58px]
+              object-contain
+              antialiased
+              select-none
+              transition-all
+              duration-500
+              ease-out
+              group-hover:scale-[1.02]
+              sm:h-[62px]
+              sm:w-[62px]
+              md:h-[66px]
+              md:w-[66px]
+              lg:h-[68px]
+              lg:w-[68px]
+            "
+          />
         </Link>
 
         {/* =================================================== */}
         {/* DESKTOP NAVIGATION                                  */}
         {/* =================================================== */}
 
-        <div
-          className="
-            ml-auto
-            hidden
-            items-center
-            gap-5
-            font-['Bodoni_Moda']
-            text-[17px]
-            font-medium
-            xl:flex
-            xl:gap-8
-            2xl:gap-12
-          "
-        >
+      <div
+  className="
+    ml-auto
+    hidden
+    items-center
+    gap-7
+    font-['Cormorant_Garamond']
+    text-[17px]
+    font-medium
+    tracking-[0.055em]
+    text-[#3A342C]
+    xl:flex
+    xl:gap-9
+    2xl:gap-12
+  "
+>
           {/* HOME */}
           <NavItem href="/" label="Home" />
 
@@ -275,34 +263,40 @@ export default function Navbar() {
                 className="
                   group
                   relative
+                  inline-flex
                   whitespace-nowrap
                   py-2
-                  font-['Bodoni_Moda']
+                  font-['Cormorant_Garamond']
+                  text-[16px]
                   font-medium
                   uppercase
-                  tracking-[0.08em]
-                  text-[#282828]
-                  transition-colors
-                  duration-300
-                  hover:text-black
+                  tracking-[0.10em]
+                  text-[#3A342C]
+                  transition-all
+                  duration-500
+                  ease-out
+                  hover:text-[#765A32]
                 "
               >
-                Collections
+                <span className="relative">
+                  Collections
 
-                <span
-                  className="
-                    absolute
-                    bottom-0
-                    left-0
-                    h-px
-                    w-0
-                    bg-black
-                    transition-all
-                    duration-300
-                    ease-out
-                    group-hover:w-full
-                  "
-                />
+                  <span
+                    className="
+                      absolute
+                      -bottom-1
+                      left-1/2
+                      h-px
+                      w-0
+                      -translate-x-1/2
+                      bg-[#765A32]
+                      transition-all
+                      duration-500
+                      ease-out
+                      group-hover:w-full
+                    "
+                  />
+                </span>
               </Link>
 
               {/* ============================================= */}
@@ -397,10 +391,12 @@ export default function Navbar() {
                   id={dropdownMenuId}
                   className="
                     overflow-hidden
+                    rounded-[16px]
                     border
-                    border-[#B88A2B]/20
-                    bg-[#F8F5ED]
-                    shadow-[0_25px_70px_rgba(36,31,24,0.20)]
+                    border-[#B88A2B]/18
+                    bg-[#F8F5ED]/98
+                    shadow-[0_22px_65px_rgba(36,31,24,0.14)]
+                    backdrop-blur-xl
                   "
                   role="menu"
                 >
@@ -430,8 +426,10 @@ export default function Navbar() {
                     <p
                       className="
                         mt-1
-                        font-['Bodoni_Moda']
-                        text-[19px]
+                        font-['Cormorant_Garamond']
+                        text-[21px]
+                        font-medium
+                        tracking-[0.01em]
                         text-[#241F18]
                       "
                     >
@@ -464,7 +462,7 @@ export default function Navbar() {
                     >
                       <span
                         className="
-                          font-['Bodoni_Moda']
+                          font-['Cormorant_Garamond']
                           text-[15px]
                           tracking-[0.03em]
                           text-[#40382E]
@@ -527,36 +525,41 @@ export default function Navbar() {
           "
         >
           {/* BUYER / USER LOGIN */}
-          <Link
-            href="/account"
-            aria-label="Buyer login"
-            className="
-              flex
-              h-10
-              w-10
-              shrink-0
-              items-center
-              justify-center
-              border
-              border-[#B88A2B]/25
-              bg-[#FBF9F3]
-              transition-all
-              duration-300
-              hover:border-[#B88A2B]
-              hover:bg-[#B88A2B]/10
-              active:scale-[0.96]
-              sm:h-11
-              sm:w-11
-            "
-          >
-            <Image
-              src="/profile.png"
-              alt="User login"
-              width={22}
-              height={22}
-              className="h-[20px] w-[20px] object-contain sm:h-[21px] sm:w-[21px]"
-            />
-          </Link>
+         <Link
+  href="/account"
+  aria-label="Buyer login"
+  className="
+    flex
+    h-10
+    w-10
+    shrink-0
+    items-center
+    justify-center
+    transition-all
+    duration-300
+    hover:opacity-70
+    active:scale-[0.96]
+    sm:h-11
+    sm:w-11
+  "
+>
+  <Image
+    src="/profile.png"
+    alt="User login"
+    width={22}
+    height={22}
+    className="
+      h-[20px]
+      w-[20px]
+      object-contain
+      transition-transform
+      duration-300
+      hover:scale-105
+      sm:h-[21px]
+      sm:w-[21px]
+    "
+  />
+</Link>
 
           <NavbarClient searchItems={searchItems} />
         </div>
@@ -565,73 +568,8 @@ export default function Navbar() {
   );
 }
 
-/* =========================================================== */
-/* ANNOUNCEMENT SET                                            */
-/* =========================================================== */
 
-function AnnouncementSet({
-  leadingDiamond = false,
-}: {
-  leadingDiamond?: boolean;
-}) {
-  return (
-    <div
-      className="
-        flex
-        shrink-0
-        items-center
-        gap-10
-        pr-10
-        font-sans
-        text-[10px]
-        font-medium
-        uppercase
-        tracking-[0.22em]
-        text-[#E3D7C2]
-        sm:text-[11px]
-      "
-    >
-      {leadingDiamond && (
-        <span className="text-[#D0B27A]">
-          ◆
-        </span>
-      )}
 
-      <span>
-        Complimentary White-Glove Concierge Delivery &amp;
-        Interior Consultation on Orders Over $5,000
-      </span>
-
-      <span className="text-[#D0B27A]">
-        ◆
-      </span>
-
-    <span>
-  Timeless Furniture Crafted for Exceptional Living
-</span>
-
-      <span className="text-[#D0B27A]">
-        ◆
-      </span>
-
-      <span>
-        Bespoke Furniture Crafted for Extraordinary Spaces
-      </span>
-
-      <span className="text-[#D0B27A]">
-        ◆
-      </span>
-
-      <span>
-        NIRA Furniture — Made in India
-      </span>
-
-      <span className="text-[#D0B27A]">
-        ◆
-      </span>
-    </div>
-  );
-}
 
 /* =========================================================== */
 /* NAV ITEM                                                    */
@@ -650,34 +588,40 @@ function NavItem({
       className="
         group
         relative
+        inline-flex
         whitespace-nowrap
         py-2
-        font-['Bodoni_Moda']
+        font-['Cormorant_Garamond']
+        text-[16px]
         font-medium
         uppercase
-        tracking-[0.08em]
-        text-[#282828]
-        transition-colors
-        duration-300
-        hover:text-black
+        tracking-[0.10em]
+        text-[#3A342C]
+        transition-all
+        duration-500
+        ease-out
+        hover:text-[#765A32]
       "
     >
-      {label}
+      <span className="relative">
+        {label}
 
-      <span
-        className="
+        <span
+          className="
           absolute
-          bottom-0
-          left-0
+          -bottom-1
+          left-1/2
           h-px
           w-0
-          bg-black
+          -translate-x-1/2
+          bg-[#765A32]
           transition-all
-          duration-300
+          duration-500
           ease-out
           group-hover:w-full
         "
-      />
+        />
+      </span>
     </Link>
   );
 }

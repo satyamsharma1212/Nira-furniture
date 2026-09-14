@@ -320,19 +320,20 @@ export default function Hero() {
               DESCRIPTION
           ================================================= */}
 
-          <p
-            className="
-              mt-7
-              max-w-[590px]
-              text-[12px]
-              leading-6
-              text-white/70
-              sm:text-[13px]
-              sm:leading-7
-            "
-          >
-            {currentSlide.description}
-          </p>
+         
+<p
+  className="
+    mt-7
+    max-w-[620px]
+    text-[18px]
+    leading-7
+    text-white/70
+    sm:text-[18px]
+    sm:leading-7
+  "
+>
+  {currentSlide.description}
+</p>
 
           {/* =================================================
               BUTTONS
@@ -350,10 +351,10 @@ export default function Hero() {
                 border-white
                 bg-white
                 px-7
-                text-[8px]
+                text-[10px]
                 font-semibold
                 uppercase
-                tracking-[0.2em]
+                tracking-[0.18em]
                 text-[#201D19]
                 transition-all
                 duration-300
@@ -375,10 +376,10 @@ export default function Hero() {
                 border-white/45
                 bg-black/20
                 px-7
-                text-[8px]
+                text-[10px]
                 font-semibold
                 uppercase
-                tracking-[0.2em]
+                tracking-[0.18em]
                 text-white
                 backdrop-blur-sm
                 transition-all
@@ -707,131 +708,7 @@ export default function Hero() {
           ANNOUNCEMENT MARQUEE
       ====================================================== */}
 
-      <div
-        className="
-          absolute
-          bottom-0
-          inset-x-0
-          z-40
-          h-[40px]
-          overflow-hidden
-          border-t
-          border-[#D0B27A]/30
-          bg-[#171512]/90
-        "
-      >
-        <div
-          className="
-            flex
-            h-full
-            w-max
-            animate-marquee
-            items-center
-            whitespace-nowrap
-          "
-        >
-          {/* FIRST SET */}
-
-          <div
-            className="
-              flex
-              shrink-0
-              items-center
-              gap-12
-              pr-10
-              text-[11px]
-              font-medium
-              uppercase
-              tracking-[0.20em]
-              text-white/80
-            "
-          >
-            <span>
-              Summer Atelier Event: Receive a bespoke marble side table with select
-              commissions
-            </span>
-
-            <span className="text-[#D0B27A]">
-              ◆
-            </span>
-
-            <span>
-              Complimentary white-glove air freight worldwide
-            </span>
-
-            <span className="text-[#D0B27A]">
-              ◆
-            </span>
-
-            <span>
-              Bespoke furniture crafted for extraordinary spaces
-            </span>
-
-            <span className="text-[#D0B27A]">
-              ◆
-            </span>
-
-            <span>
-              NIRA Furniture — Made in India
-            </span>
-
-            <span className="text-[#D0B27A]">
-              ◆
-            </span>
-          </div>
-
-          {/* SECOND SET */}
-
-          <div
-            className="
-              flex
-              shrink-0
-              items-center
-              gap-12
-              pr-10
-              text-[12px]
-              font-medium
-              uppercase
-              tracking-[0.20em]
-              text-white/80
-            "
-          >
-            <span>
-              Summer Atelier Event: Receive a bespoke marble side table with select
-              commissions
-            </span>
-
-            <span className="text-[#D0B27A]">
-              ◆
-            </span>
-
-            <span>
-              Complimentary white-glove air freight worldwide
-            </span>
-
-            <span className="text-[#D0B27A]">
-              ◆
-            </span>
-
-            <span>
-              Bespoke furniture crafted for extraordinary spaces
-            </span>
-
-            <span className="text-[#D0B27A]">
-              ◆
-            </span>
-
-            <span>
-              NIRA Furniture — Made in India
-            </span>
-
-            <span className="text-[#D0B27A]">
-              ◆
-            </span>
-          </div>
-
-        </div>
-      </div>
+  
 
     </section>
   );

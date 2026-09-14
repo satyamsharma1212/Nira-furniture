@@ -4,17 +4,16 @@ import { useEffect, useMemo, useState } from "react";
 
 import {
   type CollectionCategory,
-  type MaterialFilter as MaterialFilterValue,
 } from "@/lib/collections";
 
 import { createClient } from "@/lib/supabase/client";
 
 import ArchitecturalGuildCTA from "./ArchitecturalGuildCTA";
-import CategoryNav from "./CategoryNav";
 import CollectionsHero from "./CollectionsHero";
-import CollectionsPagination from "./CollectionsPagination";
 import MaterialArchive from "./MaterialArchive";
-import MaterialFilter from "./MaterialFilter";
+import CollectionSidebar, {
+  type FilterState,
+} from "./CollectionSidebar";
 import ProductGrid from "./ProductGrid";
 import type { CollectionProduct } from "./CollectionProductCard";
 
@@ -59,11 +58,6 @@ type Props = {
   initialCategory: CollectionCategory;
 };
 
-type SortOption =
-  | "curated"
-  | "price-low"
-  | "price-high";
-
 export default function CollectionsClient({
   initialCategory,
 }: Props) {
@@ -90,18 +84,38 @@ export default function CollectionsClient({
    * ---------------------------------------------------------
    */
 
-  const [activeMaterial, setActiveMaterial] =
-    useState<MaterialFilterValue>(
-      "All Materials",
-    );
+  const [filters, setFilters] =
+    useState<FilterState>({
+      categories: [],
+      materials: [],
+      minPrice: 0,
+      maxPrice: 500000,
+      availability: [],
+      sort: "curated",
+    });
 
-  const [sortBy, setSortBy] =
-    useState<SortOption>("curated");
+  const maxProductPrice = useMemo(() => {
+    const values = products
+      .map((product) => Number(product.price || 0))
+      .filter((value) => Number.isFinite(value) && value > 0);
 
-  const [currentPage, setCurrentPage] =
-    useState(1);
+    return values.length
+      ? Math.ceil(Math.max(...values) / 1000) * 1000
+      : 500000;
+  }, [products]);
 
-  const productsPerPage = 6;
+  useEffect(() => {
+    setFilters((previous) => {
+      if (previous.minPrice === 0 && previous.maxPrice === 500000) {
+        return {
+          ...previous,
+          maxPrice: maxProductPrice,
+        };
+      }
+
+      return previous;
+    });
+  }, [maxProductPrice]);
 
   /*
    * ---------------------------------------------------------
@@ -357,16 +371,38 @@ export default function CollectionsClient({
 
     /*
      * -------------------------------------------------------
-     * MATERIAL FILTER
+     * SIDEBAR CATEGORY FILTER
      * -------------------------------------------------------
      */
 
-    if (
-      activeMaterial !== "All Materials"
-    ) {
-      const material =
-        activeMaterial.toLowerCase();
+    if (filters.categories.length > 0) {
+      result = result.filter((product) => {
+        const categoryName =
+          product.category?.toLowerCase() || "";
 
+        const categorySlug =
+          product.categorySlug?.toLowerCase() || "";
+
+        return filters.categories.some((category) => {
+          const selected = category.toLowerCase();
+          const selectedSlug = selected.replace(/\s+/g, "-");
+
+          return (
+            categoryName === selected ||
+            categorySlug === selected ||
+            categorySlug === selectedSlug
+          );
+        });
+      });
+    }
+
+    /*
+     * -------------------------------------------------------
+     * MATERIAL PALETTE
+     * -------------------------------------------------------
+     */
+
+    if (filters.materials.length > 0) {
       result = result.filter((product) => {
         const text = `
           ${product.name}
@@ -375,47 +411,60 @@ export default function CollectionsClient({
           ${product.category ?? ""}
         `.toLowerCase();
 
-        /*
-         * MATERIAL ALIASES
-         */
+        return filters.materials.some((selectedMaterial) => {
+          const material = selectedMaterial.toLowerCase();
 
-        if (
-          material === "aged teak"
-        ) {
-          return text.includes("teak");
+          if (material === "aged teak") {
+            return text.includes("teak");
+          }
+
+          if (material === "travertine") {
+            return text.includes("travertine");
+          }
+
+          if (material === "pure bouclé") {
+            return (
+              text.includes("boucle") ||
+              text.includes("bouclé")
+            );
+          }
+
+          if (material === "braided cord") {
+            return (
+              text.includes("cord") ||
+              text.includes("braided")
+            );
+          }
+
+          if (material === "fumed walnut") {
+            return text.includes("walnut");
+          }
+
+          return text.includes(material);
+        });
+      });
+    }
+
+    /*
+     * -------------------------------------------------------
+     * PRICE RANGE
+     * -------------------------------------------------------
+     */
+
+    if (filters.minPrice > 0 || filters.maxPrice !== maxProductPrice) {
+      result = result.filter((product) => {
+        const rawPrice = Number(product.price);
+
+        // Products without a numeric price are not included
+        // when a price range is actively applied.
+        if (!Number.isFinite(rawPrice)) {
+          return false;
         }
 
-        if (
-          material === "travertine"
-        ) {
-          return text.includes("travertine");
-        }
-
-        if (
-          material === "pure bouclé"
-        ) {
-          return (
-            text.includes("boucle") ||
-            text.includes("bouclé")
-          );
-        }
-
-        if (
-          material === "braided cord"
-        ) {
-          return (
-            text.includes("cord") ||
-            text.includes("braided")
-          );
-        }
-
-        if (
-          material === "fumed walnut"
-        ) {
-          return text.includes("walnut");
-        }
-
-        return text.includes(material);
+        return (
+          rawPrice >= filters.minPrice &&
+          rawPrice <= filters.maxPrice
+        );
       });
     }
 
@@ -425,7 +474,7 @@ export default function CollectionsClient({
      * -------------------------------------------------------
      */
 
-    if (sortBy === "price-low") {
+    if (filters.sort === "price-low") {
       result.sort(
         (a, b) =>
           Number(a.price || 0) -
@@ -433,7 +482,7 @@ export default function CollectionsClient({
       );
     }
 
-    if (sortBy === "price-high") {
+    if (filters.sort === "price-high") {
       result.sort(
         (a, b) =>
           Number(b.price || 0) -
@@ -449,7 +498,7 @@ export default function CollectionsClient({
      * then the remaining products.
      */
 
-    if (sortBy === "curated") {
+    if (filters.sort === "curated") {
       result.sort((a, b) => {
         const aScore =
           (a.featured ? 2 : 0) +
@@ -467,38 +516,9 @@ export default function CollectionsClient({
   }, [
     products,
     initialCategory,
-    activeMaterial,
-    sortBy,
+    filters,
+    maxProductPrice,
   ]);
-
-  /*
-   * ---------------------------------------------------------
-   * PAGINATION
-   * ---------------------------------------------------------
-   */
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(
-      filteredProducts.length /
-        productsPerPage,
-    ),
-  );
-
-  const safePage = Math.min(
-    currentPage,
-    totalPages,
-  );
-
-  const startIndex =
-    (safePage - 1) *
-    productsPerPage;
-
-  const visibleProducts =
-    filteredProducts.slice(
-      startIndex,
-      startIndex + productsPerPage,
-    );
 
   /*
    * ---------------------------------------------------------
@@ -506,28 +526,16 @@ export default function CollectionsClient({
    * ---------------------------------------------------------
    */
 
-  function handleMaterialChange(
-    material: MaterialFilterValue,
-  ) {
-    setActiveMaterial(material);
-    setCurrentPage(1);
-  }
-
-  function handleSortChange(
-    sort: SortOption,
-  ) {
-    setSortBy(sort);
-    setCurrentPage(1);
-  }
-
   function resetCollection() {
-    setActiveMaterial(
-      "All Materials",
-    );
+    setFilters({
+      categories: [],
+      materials: [],
+      minPrice: 0,
+      maxPrice: maxProductPrice,
+      availability: [],
+      sort: "curated",
+    });
 
-    setSortBy("curated");
-
-    setCurrentPage(1);
   }
 
   /*
@@ -600,26 +608,41 @@ export default function CollectionsClient({
         }
       />
 
-      {/* CATEGORY ROUTES */}
-      <CategoryNav
-        activeCategory={
-          initialCategory
-        }
-      />
+      {/* COLLECTION FILTERS + PRODUCT GRID */}
+      <section className="px-5 pb-20 sm:px-8 lg:px-12 xl:px-16">
+        <div className="mx-auto flex max-w-[1500px] items-start gap-8 lg:gap-10 xl:gap-12">
+          <CollectionSidebar
+            products={products}
+            filters={filters}
+            setFilters={(updater) => {
+              setFilters(updater);
+            }}
+          />
 
-      {/* MATERIAL + SORT */}
-      <MaterialFilter
-        activeMaterial={
-          activeMaterial
-        }
-        sortBy={sortBy}
-        onMaterialChange={
-          handleMaterialChange
-        }
-        onSortChange={
-          handleSortChange
-        }
-      />
+          <div className="min-w-0 flex-1">
+            {/* ACTIVE FILTER SUMMARY */}
+            <div className="mb-7 flex flex-wrap items-center gap-4 border-b border-[#171512]/10 pb-5">
+              {(filters.categories.length > 0 ||
+                filters.materials.length > 0 ||
+                filters.minPrice > 0 ||
+                filters.maxPrice < maxProductPrice) && (
+                <button
+                  type="button"
+                  onClick={resetCollection}
+                  className="font-sans text-[9px] font-medium uppercase tracking-[0.16em] text-[#765A32] underline underline-offset-4 transition-colors hover:text-[#171512]"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+
+            <ProductGrid
+              products={filteredProducts}
+              onReset={resetCollection}
+            />
+          </div>
+        </div>
+      </section>
 
       {/* DATABASE ERROR */}
       {fetchError && (
@@ -635,34 +658,6 @@ export default function CollectionsClient({
           </div>
         </section>
       )}
-
-      {/* PRODUCT GRID */}
-      <section className="px-5 pb-20 sm:px-8 lg:px-12 xl:px-16">
-        <div className="mx-auto max-w-[1380px]">
-          <ProductGrid
-            products={visibleProducts}
-            onReset={
-              resetCollection
-            }
-          />
-
-          {/* PAGINATION */}
-          <CollectionsPagination
-            currentPage={safePage}
-            totalPages={totalPages}
-            totalItems={
-              filteredProducts.length
-            }
-            visibleCount={
-              visibleProducts.length
-            }
-            startIndex={startIndex}
-            onPageChange={
-              setCurrentPage
-            }
-          />
-        </div>
-      </section>
 
       {/* MATERIAL ARCHIVE */}
       <MaterialArchive />

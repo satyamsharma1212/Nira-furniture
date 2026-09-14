@@ -365,175 +365,194 @@ export default function NavbarClient({
             WISHLIST
         ================================================== */}
 
-        <Link
-          href="/wishlist"
-          aria-label="Wishlist"
-          className="
-            flex
-            h-10
-            w-10
-            shrink-0
-            touch-manipulation
-            select-none
-            items-center
-            justify-center
-            border
-            border-[#B88A2B]/25
-            bg-[#FBF9F3]
-            text-[#8A6418]
-            transition-all
-            duration-300
-            active:scale-[0.96]
-            hover:border-[#B88A2B]
-            hover:bg-[#B88A2B]
-            hover:text-white
-            sm:h-11
-            sm:w-11
-          "
-        >
-          <Heart
-            size={18}
-            strokeWidth={1.5}
-          />
-        </Link>
+       <Link
+  href="/wishlist"
+  aria-label="Wishlist"
+  className="
+    flex
+    h-10
+    w-10
+    shrink-0
+    touch-manipulation
+    select-none
+    items-center
+    justify-center
+    text-[#8A6418]
+    transition-all
+    duration-300
+    active:scale-[0.96]
+    hover:opacity-70
+    sm:h-11
+    sm:w-11
+  "
+>
+  <Heart
+    size={18}
+    strokeWidth={1.5}
+    className="transition-transform duration-300 hover:scale-105"
+  />
+</Link>
 
-        {/* =================================================
-            SEARCH
-        ================================================== */}
+{/* =================================================
+    SEARCH
+================================================== */}
 
-        <button
-          ref={searchButtonRef}
-          type="button"
-          aria-label={
-            searchOpen
-              ? "Close search"
-              : "Search products"
-          }
-          aria-expanded={searchOpen}
-          aria-controls={searchPanelId}
-          onClick={
-            searchOpen
-              ? closeSearch
-              : openSearch
-          }
-          className="
-            flex
-            h-10
-            w-10
-            shrink-0
-            touch-manipulation
-            select-none
-            items-center
-            justify-center
-            border
-            border-[#B88A2B]/25
-            bg-[#FBF9F3]
-            text-[#8A6418]
-            transition-all
-            duration-300
-            active:scale-[0.96]
-            hover:border-[#B88A2B]
-            hover:bg-[#B88A2B]
-            hover:text-white
-            sm:h-11
-            sm:w-11
-          "
-        >
-          {searchOpen ? (
-            <X
-              size={18}
-              strokeWidth={1.5}
-            />
-          ) : (
-            <Search
-              size={18}
-              strokeWidth={1.5}
-            />
-          )}
-        </button>
+<button
+  ref={searchButtonRef}
+  type="button"
+  aria-label={
+    searchOpen
+      ? "Close search"
+      : "Search products"
+  }
+  aria-expanded={searchOpen}
+  aria-controls={searchPanelId}
+  onClick={
+    searchOpen
+      ? closeSearch
+      : openSearch
+  }
+  className="
+    flex
+    h-10
+    w-10
+    shrink-0
+    touch-manipulation
+    select-none
+    items-center
+    justify-center
+    text-[#8A6418]
+    transition-all
+    duration-300
+    active:scale-[0.96]
+    hover:opacity-70
+    sm:h-11
+    sm:w-11
+  "
+>
+  {searchOpen ? (
+    <X
+      size={18}
+      strokeWidth={1.5}
+      className="transition-transform duration-300 hover:scale-105"
+    />
+  ) : (
+    <Search
+      size={18}
+      strokeWidth={1.5}
+      className="transition-transform duration-300 hover:scale-105"
+    />
+  )}
+</button>
   <Link
   href="/enquiry"
   aria-label="Enquire Now"
   className="
+    group
     hidden
     xl:inline-flex
     h-11
     shrink-0
     items-center
     justify-center
-    gap-2
+    gap-3
     border
     border-[#765A32]
     bg-[#765A32]
-    px-5
-    font-sans
-    text-[9px]
-    font-semibold
+    px-6
+    font-['Bodoni_Moda']
+    text-[10px]
+    font-medium
     uppercase
-    tracking-[0.16em]
+    tracking-[0.18em]
     text-white
+    shadow-[0_4px_14px_rgba(118,90,50,0.10)]
     transition-all
-    duration-300
-    hover:border-[#765A32]
-    hover:bg-[#765A32]
-    hover:tracking-[0.19em]
+    duration-500
+    ease-out
+    hover:bg-[#5F4728]
+    hover:border-[#5F4728]
+    hover:shadow-[0_7px_20px_rgba(118,90,50,0.18)]
+    active:scale-[0.98]
   "
 >
-  Enquire Now
+  <span>
+    Enquire Now
+  </span>
+
+  <span
+    className="
+      inline-block
+      text-[13px]
+      font-light
+      leading-none
+      transition-transform
+      duration-500
+      ease-out
+      group-hover:translate-x-1
+    "
+  >
+    →
+  </span>
 </Link>
        
         {/* =================================================
             MOBILE MENU
         ================================================== */}
 
-        <button
-          type="button"
-          aria-label={
-            mobileOpen
-              ? "Close menu"
-              : "Open menu"
-          }
-          aria-expanded={mobileOpen}
-          aria-haspopup="dialog"
-          onClick={toggleMobileMenu}
-          className="
-            group
-            flex
-            h-10
-            w-10
-            shrink-0
-            touch-manipulation
-            cursor-pointer
-            select-none
-            items-center
-            justify-center
-            border
-            border-[#B88A2B]/30
-            bg-[#FBF9F3]
-            text-[#8A6418]
-            transition-all
-            duration-300
-            active:scale-[0.96]
-            hover:border-[#B88A2B]
-            hover:bg-[#B88A2B]
-            hover:text-white
-            sm:h-11
-            sm:w-11
-            xl:hidden
-          "
-        >
-          {mobileOpen ? (
-            <X
-              size={21}
-              strokeWidth={1.5}
-            />
-          ) : (
-            <Menu
-              size={21}
-              strokeWidth={1.5}
-            />
-          )}
-        </button>
+     <button
+  type="button"
+  aria-label={
+    mobileOpen
+      ? "Close menu"
+      : "Open menu"
+  }
+  aria-expanded={mobileOpen}
+  aria-haspopup="dialog"
+  onClick={toggleMobileMenu}
+  className="
+    group
+    flex
+    h-10
+    w-10
+    shrink-0
+    touch-manipulation
+    cursor-pointer
+    select-none
+    items-center
+    justify-center
+    text-[#8A6418]
+    transition-all
+    duration-300
+    active:scale-[0.96]
+    hover:opacity-70
+    sm:h-11
+    sm:w-11
+    xl:hidden
+  "
+>
+  {mobileOpen ? (
+    <X
+      size={21}
+      strokeWidth={1.5}
+      className="
+        transition-transform
+        duration-300
+        group-hover:scale-105
+      "
+    />
+  ) : (
+    <Menu
+      size={21}
+      strokeWidth={1.5}
+      className="
+        transition-transform
+        duration-300
+        group-hover:scale-105
+      "
+    />
+  )}
+</button>
       </div>
 
       {/* =====================================================

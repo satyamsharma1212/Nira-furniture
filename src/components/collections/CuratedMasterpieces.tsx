@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   ChevronLeft,
@@ -709,10 +710,13 @@ export default function CuratedMasterpieces() {
                           justify-end
                         "
                       >
-                        <button
-                          type="button"
+                        <Link
+                          href="/enquiry"
                           className="
+                            inline-flex
                             shrink-0
+                            items-center
+                            justify-center
                             border
                             border-[#171717]
                             bg-[#171717]
@@ -731,8 +735,8 @@ export default function CuratedMasterpieces() {
                             hover:tracking-[0.15em]
                           "
                         >
-                          Inquire Atelier
-                        </button>
+                          Enquiry
+                        </Link>
                       </div>
                     </div>
                   </article>
