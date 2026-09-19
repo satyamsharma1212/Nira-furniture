@@ -42,7 +42,10 @@ type Product = {
   short_description: string | null;
   price: number | string | null;
   financing: string | null;
-  material: string | null;
+
+  // Materials are fetched directly from Supabase products.materials
+  materials: string[] | null;
+
   dimensions: string | null;
   weight: string | null;
   stock: number | null;
@@ -163,7 +166,7 @@ async function getProduct(slug: string) {
       short_description,
       price,
       financing,
-      material,
+      materials,
       dimensions,
       weight,
       stock,
@@ -320,7 +323,7 @@ export default async function ProductPage({
         short_description,
         price,
         financing,
-        material,
+        materials,
         dimensions,
         weight,
         stock,
@@ -364,6 +367,24 @@ export default async function ProductPage({
   const dimensions = getDimensions(
     product.dimensions,
   );
+
+  /*
+   * =======================================================
+   * MATERIALS USED
+   *
+   * These come directly from:
+   * products.materials (text[])
+   *
+   * The admin-selected materials are displayed exactly
+   * from this array.
+   * =======================================================
+   */
+
+  const materials = Array.isArray(product.materials)
+    ? product.materials
+        .map((item) => item?.trim())
+        .filter(Boolean)
+    : [];
 
   /*
    * =======================================================
@@ -601,56 +622,32 @@ export default async function ProductPage({
 
               <div className="grid grid-cols-2 gap-x-8 gap-y-7">
 
-                {/* MATERIAL */}
+                {/* MATERIALS USED */}
 
-                {product.material && (
-                  <InfoBlock title="Material">
-                    <p className="text-[13px] font-medium leading-6 text-[#5D5549]">
-                      {product.material}
-                    </p>
-                  </InfoBlock>
+                {materials.length > 0 && (
+                  <div className="col-span-2">
+                    <InfoBlock title="Materials Used">
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {materials.map((item, index) => (
+                          <span
+                            key={`${item}-${index}`}
+                            className="inline-flex items-center border border-[#B8860B]/25 bg-[#F4F0E8] px-3 py-2 text-[12px] font-medium text-[#5D5549]"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </InfoBlock>
+                  </div>
                 )}
 
                 {/* DIMENSIONS */}
 
                 {product.dimensions && (
                   <InfoBlock title="Dimensions">
-
-                    <div className="space-y-1.5">
-
-                      {dimensions.width &&
-                      dimensions.depth &&
-                      dimensions.height ? (
-                        <>
-                          <p className="flex items-center gap-2 text-[13px] font-medium text-[#5D5549]">
-                            <span className="font-bold text-[#B8860B]">
-                              W
-                            </span>
-                            {dimensions.width}
-                          </p>
-
-                          <p className="flex items-center gap-2 text-[13px] font-medium text-[#5D5549]">
-                            <span className="font-bold text-[#B8860B]">
-                              D
-                            </span>
-                            {dimensions.depth}
-                          </p>
-
-                          <p className="flex items-center gap-2 text-[13px] font-medium text-[#5D5549]">
-                            <span className="font-bold text-[#B8860B]">
-                              H
-                            </span>
-                            {dimensions.height}
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-[13px] font-medium leading-6 text-[#5D5549]">
-                          {product.dimensions}
-                        </p>
-                      )}
-
-                    </div>
-
+                    <p className="text-[13px] font-medium leading-6 text-[#5D5549]">
+                      {product.dimensions}
+                    </p>
                   </InfoBlock>
                 )}
 
@@ -679,7 +676,7 @@ export default async function ProductPage({
 
               {/* MATERIAL NOTE */}
 
-              {product.material && (
+              {materials.length > 0 && (
                 <div className="mt-8 border-t border-[#241F18]/10 pt-7">
 
                   <div className="flex items-center gap-3">
@@ -703,6 +700,7 @@ export default async function ProductPage({
                         strokeWidth={2}
                         className="shrink-0 text-[#B8860B]"
                       />
+
                       <span>
                         Hand Finished
                       </span>
@@ -714,6 +712,7 @@ export default async function ProductPage({
                         strokeWidth={2}
                         className="shrink-0 text-[#B8860B]"
                       />
+
                       <span>
                         Made to Order
                       </span>
@@ -725,6 +724,7 @@ export default async function ProductPage({
                         strokeWidth={2}
                         className="shrink-0 text-[#B8860B]"
                       />
+
                       <span>
                         Premium Materials
                       </span>
@@ -736,6 +736,7 @@ export default async function ProductPage({
                         strokeWidth={2}
                         className="shrink-0 text-[#B8860B]"
                       />
+
                       <span>
                         NIRA Quality
                       </span>
@@ -784,6 +785,7 @@ export default async function ProductPage({
                     href={buyNowUrl}
                     className="group inline-flex min-h-14 w-full items-center justify-center gap-3 bg-[#241F18] px-7 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-300 hover:bg-[#B8860B]"
                   >
+
                     <ShoppingBag
                       size={17}
                       strokeWidth={1.8}
@@ -795,6 +797,7 @@ export default async function ProductPage({
                       size={17}
                       className="transition-transform duration-300 group-hover:translate-x-1"
                     />
+
                   </Link>
                 ) : (
                   <div className="inline-flex min-h-14 w-full cursor-not-allowed items-center justify-center gap-3 border border-[#241F18]/10 bg-[#EAE5DB] px-7 text-[12px] font-bold uppercase tracking-[0.18em] text-[#8A8174]">
@@ -812,12 +815,14 @@ export default async function ProductPage({
                     href={`/quote?product=${product.id}`}
                     className="group inline-flex min-h-14 flex-1 items-center justify-center gap-3 border border-[#B8860B] bg-[#B8860B] px-7 text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-all duration-300 hover:border-[#241F18] hover:bg-[#241F18]"
                   >
+
                     Request a Quote
 
                     <ArrowRight
                       size={17}
                       className="transition-transform duration-300 group-hover:translate-x-1"
                     />
+
                   </Link>
 
                   {/* CONTACT NIRA */}
@@ -943,12 +948,14 @@ export default async function ProductPage({
             href={collectionUrl}
             className="group inline-flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[#756B5B] hover:text-[#B8860B]"
           >
+
             <ArrowLeft
               size={15}
               className="transition-transform duration-300 group-hover:-translate-x-1"
             />
 
             Back to Collection
+
           </Link>
 
         </div>
@@ -1036,14 +1043,12 @@ function ProductCardSimple({
         </h3>
 
         <span className="mt-2 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] text-[#8A8174] transition-colors group-hover:text-[#B8860B]">
-
           View Details
 
           <ArrowRight
             size={13}
             className="transition-transform duration-300 group-hover:translate-x-1"
           />
-
         </span>
 
       </div>

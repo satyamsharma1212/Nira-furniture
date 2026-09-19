@@ -25,6 +25,7 @@ type SupabaseProduct = {
   short_description: string | null;
   price: number | string | null;
   material: string | null;
+  materials: string[] | null;
   dimensions: string | null;
   weight: string | null;
   main_image_url: string | null;
@@ -138,6 +139,7 @@ export default function CollectionsClient({
           short_description,
           price,
           material,
+          materials,
           dimensions,
           weight,
           main_image_url,
@@ -206,7 +208,17 @@ export default function CollectionsClient({
             product.price ?? "Price on Request",
 
           material:
-            product.material || undefined,
+            product.material ||
+            (Array.isArray(product.materials)
+              ? product.materials.join(", ")
+              : undefined),
+
+          materials:
+            Array.isArray(product.materials)
+              ? product.materials
+                  .map((item) => item?.trim())
+                  .filter(Boolean)
+              : [],
 
           dimensions:
             product.dimensions || undefined,
@@ -404,44 +416,49 @@ export default function CollectionsClient({
 
     if (filters.materials.length > 0) {
       result = result.filter((product) => {
-        const text = `
-          ${product.name}
-          ${product.description ?? ""}
-          ${product.material ?? ""}
-          ${product.category ?? ""}
-        `.toLowerCase();
+        const productMaterials = Array.isArray(
+          product.materials,
+        )
+          ? product.materials
+              .map((item) =>
+                item?.trim().toLowerCase(),
+              )
+              .filter(Boolean)
+          : [];
 
-        return filters.materials.some((selectedMaterial) => {
-          const material = selectedMaterial.toLowerCase();
+        if (productMaterials.length === 0) {
+          return false;
+        }
 
-          if (material === "aged teak") {
-            return text.includes("teak");
-          }
+        /*
+         * A product matches when its admin-selected
+         * materials contain ANY material selected
+         * in the sidebar.
+         *
+         * Example:
+         * Product materials:
+         * ["Roping", "Agora Fabric", "Teak Wood"]
+         *
+         * Sidebar selection:
+         * ["Teak Wood"]
+         *
+         * => product is shown.
+         */
+        return filters.materials.some(
+          (selectedMaterial) => {
+            const selected = selectedMaterial
+              .trim()
+              .toLowerCase();
 
-          if (material === "travertine") {
-            return text.includes("travertine");
-          }
+            if (!selected) {
+              return false;
+            }
 
-          if (material === "pure bouclé") {
-            return (
-              text.includes("boucle") ||
-              text.includes("bouclé")
+            return productMaterials.includes(
+              selected,
             );
-          }
-
-          if (material === "braided cord") {
-            return (
-              text.includes("cord") ||
-              text.includes("braided")
-            );
-          }
-
-          if (material === "fumed walnut") {
-            return text.includes("walnut");
-          }
-
-          return text.includes(material);
-        });
+          },
+        );
       });
     }
 
@@ -609,8 +626,8 @@ export default function CollectionsClient({
       />
 
       {/* COLLECTION FILTERS + PRODUCT GRID */}
-      <section className="px-5 pb-20 sm:px-8 lg:px-12 xl:px-16">
-        <div className="mx-auto flex max-w-[1500px] items-start gap-8 lg:gap-10 xl:gap-12">
+      <section className="px-4 pb-20 sm:px-6 lg:px-12 xl:px-16">
+        <div className="mx-auto flex max-w-[1500px] flex-col items-stretch gap-8 lg:flex-row lg:items-start lg:gap-10 xl:gap-12">
           <CollectionSidebar
             products={products}
             filters={filters}
@@ -619,7 +636,7 @@ export default function CollectionsClient({
             }}
           />
 
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 w-full flex-1">
             {/* ACTIVE FILTER SUMMARY */}
             <div className="mb-7 flex flex-wrap items-center gap-4 border-b border-[#171512]/10 pb-5">
               {(filters.categories.length > 0 ||

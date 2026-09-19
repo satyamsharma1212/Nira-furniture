@@ -16,6 +16,7 @@ type Props = {
   products: {
     category?: string | null;
     material?: string | null;
+    materials?: string[] | null;
     price?: number | string | null;
   }[];
   filters: FilterState;
@@ -59,13 +60,30 @@ export default function CollectionSidebar({
    */
 
   const materials = useMemo(() => {
-    return Array.from(
-      new Set(
-        products
-          .map((product) => product.material?.trim())
-          .filter(Boolean),
-      ),
-    ) as string[];
+    const allMaterials = products.flatMap(
+      (product) =>
+        Array.isArray(product.materials)
+          ? product.materials
+              .map((material) =>
+                material?.trim(),
+              )
+              .filter(Boolean)
+          : [],
+    );
+
+    const seen = new Set<string>();
+
+    return allMaterials.filter((material) => {
+      const normalized =
+        material.toLowerCase();
+
+      if (seen.has(normalized)) {
+        return false;
+      }
+
+      seen.add(normalized);
+      return true;
+    });
   }, [products]);
 
   /*
@@ -167,108 +185,108 @@ export default function CollectionSidebar({
     CATEGORY_LIST.length - INITIAL_CATEGORY_COUNT;
 
   return (
-    <aside className="sticky top-28 hidden min-h-[calc(100vh-8rem)] w-[400px] shrink-0 lg:block xl:w-[430px]">
+    <aside className="block w-full shrink-0 lg:w-[380px] xl:w-[410px]">
       <div
         className="
-          min-h-[calc(100vh-8rem)]
-          overflow-hidden
           border
           border-[#171512]/10
           bg-[#F7F4EE]
           shadow-[0_18px_60px_rgba(36,31,24,0.06)]
+          [scrollbar-width:thin]
+          [scrollbar-color:#765A32_#EEEAE3]
         "
       >
         {/* =====================================================
             HEADER
         ====================================================== */}
 
-   <div className="border-b border-[#171512]/10 px-10 py-14">
-  <div className="flex items-start justify-between gap-6">
-    <div className="min-h-[190px]">
-  <p
-    className="
-      font-sans
-      text-[13px]
-      font-medium
-      uppercase
-      tracking-[0.25em]
-      text-[#8B7352]
-    "
-  >
-    NIRA Furniture
-  </p>
+        <div className="border-b border-[#171512]/10 px-5 py-7 sm:px-7 sm:py-8 xl:px-9 xl:py-10">
+          <div className="flex items-start justify-between gap-5">
+            <div>
+              <p
+                className="
+                  font-sans
+                  text-[10px]
+                  font-medium
+                  uppercase
+                  tracking-[0.25em]
+                  text-[#8B7352]
+                "
+              >
+                NIRA Furniture
+              </p>
 
-  <h2
-    className="
-      mt-5
-      font-serif
-      text-[46px]
-      font-normal
-      leading-none
-      tracking-[-0.02em]
-      text-[#171512]
-    "
-  >
-    Filters
-  </h2>
+              <h2
+                className="
+                  mt-2
+                  font-serif
+                  text-[32px]
+                  font-normal
+                  leading-none
+                  tracking-[-0.02em]
+                  text-[#171512]
+                "
+              >
+                Filters
+              </h2>
 
-  <p
-    className="
-      mt-6
-      max-w-[300px]
-      font-sans
-      text-[19px]
-      leading-7
-      tracking-[0.05em]
-      text-[#171512]/45
-    "
-  >
-    Refine the NIRA collection to discover
-    pieces suited to your space.
-  </p>
-</div>
+              <p
+                className="
+                  mt-3
+                  max-w-[210px]
+                  font-sans
+                  text-[10px]
+                  leading-5
+                  tracking-[0.05em]
+                  text-[#171512]/45
+                "
+              >
+                Refine the NIRA collection to discover
+                pieces suited to your space.
+              </p>
+            </div>
 
-    <button
-      type="button"
-      onClick={reset}
-      className="
-        group
-        inline-flex
-        shrink-0
-        items-center
-        gap-2
-        pt-2
-        font-sans
-        text-[12px]
-        font-medium
-        uppercase
-        tracking-[0.16em]
-        text-[#765A32]
-        transition-all
-        duration-300
-        hover:text-[#171512]
-      "
-    >
-      <RotateCcw
-        size={12}
-        strokeWidth={1.5}
-        className="
-          transition-transform
-          duration-500
-          group-hover:rotate-[-45deg]
-        "
-      />
+            <button
+              type="button"
+              onClick={reset}
+              className="
+                group
+                inline-flex
+                shrink-0
+                items-center
+                gap-2
+                pt-1
+                font-sans
+                text-[9px]
+                font-medium
+                uppercase
+                tracking-[0.16em]
+                text-[#765A32]
+                transition-all
+                duration-300
+                hover:text-[#171512]
+              "
+            >
+              <RotateCcw
+                size={12}
+                strokeWidth={1.5}
+                className="
+                  transition-transform
+                  duration-500
+                  group-hover:rotate-[-45deg]
+                "
+              />
 
-      Clear
-    </button>
-  </div>
-</div>
+              Clear
+            </button>
+          </div>
+        </div>
 
         {/* =====================================================
             COLLECTIONS
         ====================================================== */}
 
-        <div className="px-10 py-10">
+        <div className="px-5 py-7 sm:px-7 sm:py-8 xl:px-9 xl:py-9">
           <button
             type="button"
             onClick={() =>
@@ -286,7 +304,7 @@ export default function CollectionSidebar({
               <p
                 className="
                   font-sans
-                  text-[13px]
+                  text-[10px]
                   font-semibold
                   uppercase
                   tracking-[0.22em]
@@ -300,7 +318,7 @@ export default function CollectionSidebar({
                 className="
                   mt-1.5
                   font-sans
-                  text-[12px]
+                  text-[9px]
                   uppercase
                   tracking-[0.12em]
                   text-[#171512]/40
@@ -357,7 +375,7 @@ export default function CollectionSidebar({
                       className={`
                         group
                         flex
-                        min-h-[48px]
+                        min-h-[44px]
                         cursor-pointer
                         items-center
                         justify-between
@@ -380,8 +398,8 @@ export default function CollectionSidebar({
                           className={`
                             relative
                             flex
-                            h-[17px]
-                            w-[17px]
+                            h-4
+                            w-4
                             shrink-0
                             items-center
                             justify-center
@@ -418,8 +436,8 @@ export default function CollectionSidebar({
                           className={`
                             truncate
                             font-serif
-                            text-[19px]
-                            leading-tight
+                            text-[15px]
+                            leading-snug
                             transition-colors
                             duration-300
                             ${
@@ -438,7 +456,7 @@ export default function CollectionSidebar({
                           ml-3
                           shrink-0
                           font-sans
-                          text-[13px]
+                          text-[10px]
                           tabular-nums
                           text-[#8A8174]
                         "
@@ -481,7 +499,7 @@ export default function CollectionSidebar({
                     <span
                       className="
                         font-sans
-                        text-[12px]
+                        text-[9px]
                         font-semibold
                         uppercase
                         tracking-[0.18em]
@@ -496,7 +514,7 @@ export default function CollectionSidebar({
                         items-center
                         gap-2
                         font-sans
-                        text-[12px]
+                        text-[9px]
                         uppercase
                         tracking-[0.1em]
                       "
@@ -536,7 +554,7 @@ export default function CollectionSidebar({
                     px-5
                     py-4
                     font-sans
-                    text-[12px]
+                    text-[9px]
                     font-semibold
                     uppercase
                     tracking-[0.18em]
@@ -563,18 +581,18 @@ export default function CollectionSidebar({
             MATERIAL PALETTE
         ====================================================== */}
 
-        <div className="border-t border-[#171512]/10 px-10 py-8">
+        <div className="border-t border-[#171512]/10 px-5 py-7 sm:px-7 sm:py-8 xl:px-9 xl:py-9">
           <button
             type="button"
             onClick={() => setOpenMaterial(!openMaterial)}
             className="flex w-full items-center justify-between text-left"
           >
             <div>
-              <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.22em] text-[#171512]">
+              <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.22em] text-[#171512]">
                 Material Palette
               </p>
 
-              <p className="mt-1.5 font-sans text-[12px] uppercase tracking-[0.12em] text-[#171512]/40">
+              <p className="mt-1.5 font-sans text-[9px] uppercase tracking-[0.12em] text-[#171512]/40">
                 {filters.materials.length > 0
                   ? `${filters.materials.length} selected`
                   : `${materials.length} available`}
@@ -593,7 +611,7 @@ export default function CollectionSidebar({
           {openMaterial && (
             <div className="mt-6">
               {materials.length === 0 ? (
-                <p className="py-3 font-sans text-[13px] uppercase tracking-[0.12em] text-[#171512]/35">
+                <p className="py-3 font-sans text-[10px] uppercase tracking-[0.12em] text-[#171512]/35">
                   No materials available
                 </p>
               ) : (
@@ -606,7 +624,7 @@ export default function CollectionSidebar({
                         materials: [],
                       }))
                     }
-                    className={`border px-4 py-3 font-sans text-[13px] font-medium uppercase tracking-[0.08em] transition-all duration-300 ${
+                    className={`border px-3 py-2.5 font-sans text-[9px] font-medium uppercase tracking-[0.08em] transition-all duration-300 ${
                       filters.materials.length === 0
                         ? "border-[#765A32] bg-[#765A32] text-white"
                         : "border-[#171512]/10 bg-white text-[#171512]/65 hover:border-[#765A32]/50 hover:text-[#765A32]"
@@ -623,7 +641,7 @@ export default function CollectionSidebar({
                         key={material}
                         type="button"
                         onClick={() => toggleMaterial(material)}
-                        className={`border px-4 py-3 font-sans text-[13px] font-medium uppercase tracking-[0.08em] transition-all duration-300 ${
+                        className={`border px-3 py-2.5 font-sans text-[9px] font-medium uppercase tracking-[0.08em] transition-all duration-300 ${
                           active
                             ? "border-[#765A32] bg-[#765A32] text-white"
                             : "border-[#171512]/10 bg-white text-[#171512]/65 hover:border-[#765A32]/50 hover:text-[#765A32]"
@@ -643,7 +661,7 @@ export default function CollectionSidebar({
             PRICE
         ====================================================== */}
 
-        <div className="border-t border-[#171512]/10 px-10 py-8">
+        <div className="border-t border-[#171512]/10 px-5 py-7 sm:px-7 sm:py-8 xl:px-9 xl:py-9">
           <button
             type="button"
             onClick={() => setOpenPrice(!openPrice)}
@@ -659,7 +677,7 @@ export default function CollectionSidebar({
               <p
                 className="
                   font-sans
-                  text-[13px]
+                  text-[10px]
                   font-semibold
                   uppercase
                   tracking-[0.22em]
@@ -673,7 +691,7 @@ export default function CollectionSidebar({
                 className="
                   mt-1.5
                   font-sans
-                  text-[12px]
+                  text-[9px]
                   uppercase
                   tracking-[0.12em]
                   text-[#171512]/40
@@ -711,7 +729,7 @@ export default function CollectionSidebar({
           </button>
 
           {openPrice && (
-            <div className="mt-7">
+            <div className="mt-6">
               {/* MIN PRICE */}
 
               <div>
@@ -719,7 +737,7 @@ export default function CollectionSidebar({
                   <span
                     className="
                       font-sans
-                      text-[12px]
+                      text-[9px]
                       uppercase
                       tracking-[0.12em]
                       text-[#8A8174]
@@ -778,12 +796,12 @@ export default function CollectionSidebar({
 
               {/* MAX PRICE */}
 
-              <div className="mt-7">
+              <div className="mt-6">
                 <div className="mb-2 flex items-center justify-between">
                   <span
                     className="
                       font-sans
-                      text-[12px]
+                      text-[9px]
                       uppercase
                       tracking-[0.12em]
                       text-[#8A8174]
@@ -842,7 +860,7 @@ export default function CollectionSidebar({
 
               {/* PRICE BOXES */}
 
-              <div className="mt-7 grid grid-cols-2 gap-3">
+              <div className="mt-6 grid grid-cols-2 gap-2.5">
                 <div
                   className="
                     border
@@ -855,7 +873,7 @@ export default function CollectionSidebar({
                   <p
                     className="
                       font-sans
-                      text-[11px]
+                      text-[8px]
                       uppercase
                       tracking-[0.15em]
                       text-[#8A8174]
@@ -864,7 +882,7 @@ export default function CollectionSidebar({
                     From
                   </p>
 
-                  <p className="mt-1 font-serif text-[20px]">
+                  <p className="mt-1 font-serif text-[18px]">
                     ₹
                     {filters.minPrice.toLocaleString(
                       "en-IN",
@@ -884,7 +902,7 @@ export default function CollectionSidebar({
                   <p
                     className="
                       font-sans
-                      text-[11px]
+                      text-[8px]
                       uppercase
                       tracking-[0.15em]
                       text-[#8A8174]
@@ -893,7 +911,7 @@ export default function CollectionSidebar({
                     To
                   </p>
 
-                  <p className="mt-1 font-serif text-[20px]">
+                  <p className="mt-1 font-serif text-[18px]">
                     ₹
                     {filters.maxPrice.toLocaleString(
                       "en-IN",
@@ -909,11 +927,11 @@ export default function CollectionSidebar({
             SORT
         ====================================================== */}
 
-        <div className="border-t border-[#171512]/10 px-10 py-8">
+        <div className="border-t border-[#171512]/10 px-5 py-7 sm:px-7 sm:py-8 xl:px-9 xl:py-9">
           <p
             className="
               font-sans
-              text-[13px]
+              text-[10px]
               font-semibold
               uppercase
               tracking-[0.22em]
@@ -972,15 +990,16 @@ export default function CollectionSidebar({
             border-t
             border-[#171512]/10
             bg-[#EEEAE3]/70
-            px-10
-            py-7
+            px-5
+            py-5
+            sm:px-7
           "
         >
           <p
             className="
               text-center
               font-sans
-              text-[11px]
+              text-[8px]
               uppercase
               tracking-[0.18em]
               text-[#171512]/35

@@ -412,6 +412,46 @@ export default function ProductFormPage({
       }
 
       /*
+       * CHECK FOR EXISTING PRODUCT
+       *
+       * When creating a new product, prevent duplicate
+       * products with the same slug or product name.
+       * While editing, the current product is excluded.
+       */
+      const normalizedName = form.name.trim();
+      const normalizedSlug = form.slug.trim();
+
+      let duplicateQuery = supabase
+        .from("products")
+        .select("id, name, slug")
+        .or(
+          `name.ilike.${normalizedName.replace(/,/g, "\\,")},slug.ilike.${normalizedSlug.replace(/,/g, "\\,")}`,
+        );
+
+      if (productId) {
+        duplicateQuery = duplicateQuery.neq("id", productId);
+      }
+
+      const {
+        data: existingProducts,
+        error: duplicateCheckError,
+      } = await duplicateQuery.limit(1);
+
+      if (duplicateCheckError) {
+        throw new Error(
+          `Could not check for existing product: ${duplicateCheckError.message}`,
+        );
+      }
+
+      if (existingProducts && existingProducts.length > 0) {
+        const existingProduct = existingProducts[0];
+
+        throw new Error(
+          `Product is already present in the database: "${existingProduct.name}"`,
+        );
+      }
+
+      /*
        * INSERT / UPDATE PRODUCT
        */
       const productData = {
@@ -730,18 +770,7 @@ export default function ProductFormPage({
           </p>
         </div>
 
-        {/* MESSAGES */}
-        {error && (
-          <div className="mb-6 border border-red-900/15 bg-red-50 px-5 py-4 font-sans text-sm font-semibold text-red-700">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="mb-6 border border-green-900/15 bg-green-50 px-5 py-4 font-sans text-sm font-semibold text-green-700">
-            {success}
-          </div>
-        )}
+        {/* STATUS MESSAGES ARE SHOWN NEAR THE SAVE ACTION */}
 
         <form
           onSubmit={handleSubmit}
@@ -975,7 +1004,7 @@ export default function ProductFormPage({
               </div>
 
               {/* FINANCING */}
-              <div className="sm:col-span-2 lg:col-span-4">
+              {/* <div className="sm:col-span-2 lg:col-span-4">
                 <label className="mb-2 block font-sans text-[10px] font-bold uppercase tracking-[0.18em]">
                   Financing
                 </label>
@@ -991,7 +1020,7 @@ export default function ProductFormPage({
                   placeholder="or $1,233/mo concierge financing"
                   className="w-full border border-[#171512]/15 bg-[#F7F4EE] px-4 py-4 font-sans text-sm outline-none focus:border-[#765A32]"
                 />
-              </div>
+              </div> */}
             </div>
 
             <div className="mt-7 flex flex-wrap gap-6 border-t border-[#171512]/10 pt-6">
@@ -1045,7 +1074,7 @@ export default function ProductFormPage({
 
             <div className="grid gap-6 sm:grid-cols-3">
               {/* MATERIAL SUMMARY */}
-              <div>
+              {/* <div>
                 <label className="mb-2 block font-sans text-[10px] font-bold uppercase tracking-[0.18em]">
                   Material
                 </label>
@@ -1061,7 +1090,7 @@ export default function ProductFormPage({
                   placeholder="Aged Weathered Teak & Hand-Woven Cord"
                   className="w-full border border-[#171512]/15 bg-[#F7F4EE] px-4 py-4 font-sans text-sm outline-none focus:border-[#765A32]"
                 />
-              </div>
+              </div> */}
 
               {/* DIMENSIONS */}
               <div>
@@ -1413,7 +1442,7 @@ export default function ProductFormPage({
           </section>
 
           {/* SAVE */}
-          <div className="flex flex-col-reverse gap-3 border-t border-[#171512]/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-5 border-t border-[#171512]/10 pt-8 sm:flex-row sm:items-end sm:justify-between">
             <Link
               href="/admin/products"
               className="inline-flex items-center justify-center border border-[#171512]/15 px-6 py-4 font-sans text-[10px] font-bold uppercase tracking-[0.18em] transition hover:border-[#765A32] hover:text-[#765A32]"
@@ -1421,29 +1450,47 @@ export default function ProductFormPage({
               Cancel
             </Link>
 
-            <button
-              type="submit"
-              disabled={saving}
-              className="inline-flex items-center justify-center gap-3 bg-[#171512] px-8 py-4 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-[#765A32] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {saving ? (
-                <>
-                  <Loader2
-                    size={16}
-                    className="animate-spin"
-                  />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save size={16} />
-
-                  {isEditing
-                    ? "Save Changes"
-                    : "Create Product"}
-                </>
+            <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:min-w-[340px] sm:items-end">
+              {/* STATUS MESSAGE */}
+              {error && (
+                <div
+                  role="alert"
+                  className="w-full border border-red-900/15 bg-red-50 px-4 py-3 text-left font-sans text-xs font-semibold leading-5 text-red-700 sm:max-w-[420px]"
+                >
+                  {error}
+                </div>
               )}
-            </button>
+
+              {success && (
+                <div
+                  role="status"
+                  className="w-full border border-green-900/15 bg-green-50 px-4 py-3 text-left font-sans text-xs font-semibold leading-5 text-green-700 sm:max-w-[420px]"
+                >
+                  {success}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={saving}
+                className="inline-flex w-full items-center justify-center gap-3 bg-[#171512] px-8 py-4 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-[#765A32] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              >
+                {saving ? (
+                  <>
+                    <Loader2
+                      size={16}
+                      className="animate-spin"
+                    />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save size={16} />
+                    {isEditing ? "Save Changes" : "Create Product"}
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </section>

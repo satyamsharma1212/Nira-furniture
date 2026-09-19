@@ -326,7 +326,7 @@ export default async function AdminProductsPage({
                 {/* PRICE */}
 
                 <div className="font-sans text-sm font-semibold">
-                  $
+                  ₹
                   {Number(product.price || 0).toLocaleString(
                     "en-US",
                     {
