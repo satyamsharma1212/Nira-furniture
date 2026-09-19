@@ -79,12 +79,12 @@ export default async function AdminDashboard() {
             description="View and manage customer orders."
           />
 
-          <AdminCard
+          {/* <AdminCard
             href="/admin/customers"
             icon={Users}
             label="Customers"
             description="View registered NIRA customers."
-          />
+          /> */}
 
         </div>
 
