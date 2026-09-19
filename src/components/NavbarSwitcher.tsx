@@ -1,13 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+
 import Navbar from "@/components/Navbar";
 import AdminNavbar from "@/components/admin/AdminNavbar";
 import { createClient } from "@/lib/supabase/client";
 
 export default function NavbarSwitcher() {
+  const pathname = usePathname();
+
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  /*
+   * =========================================================
+   * CHECK WHETHER CURRENT USER IS AN ADMIN
+   * =========================================================
+   */
 
   useEffect(() => {
     const supabase = createClient();
@@ -46,9 +56,61 @@ export default function NavbarSwitcher() {
     };
   }, []);
 
+  /*
+   * =========================================================
+   * ADMIN ROUTE CHECK
+   * =========================================================
+   *
+   * Only /admin and /admin/* should ever display
+   * the AdminNavbar.
+   */
+
+  const isAdminRoute =
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/");
+
+  /*
+   * =========================================================
+   * LOADING
+   * =========================================================
+   */
+
   if (loading) {
     return null;
   }
 
-  return isAdmin ? <AdminNavbar /> : <Navbar />;
+  /*
+   * =========================================================
+   * ADMIN AREA
+   * =========================================================
+   *
+   * If the user is visiting an admin route:
+   *
+   * /admin
+   * /admin/products
+   * /admin/categories
+   * /admin/orders
+   *
+   * then show AdminNavbar only if the user is actually
+   * registered in admin_users.
+   */
+
+  if (isAdminRoute) {
+    if (!isAdmin) {
+      return <Navbar />;
+    }
+
+    return <AdminNavbar />;
+  }
+
+  /*
+   * =========================================================
+   * PUBLIC WEBSITE
+   * =========================================================
+   *
+   * Even if an admin is logged in, public routes always
+   * use the normal NIRA Navbar.
+   */
+
+  return <Navbar />;
 }
