@@ -10,22 +10,17 @@ import NavbarClient from "./NavbarClient";
 const LOGO_URL = "/nira-logo.png";
 
 const collectionItems = [
+  // {
+  //   label: "All Collections",
+  //   href: "/collections",
+  // },
   {
-    label: "All Collections",
-    href: "/collections",
-  },
- 
-  {
-    label: "Seating",
-    href: "/collections/seating",
-  },
-  {
-    label: "Dining",
-    href: "/collections/dining",
+    label: "Indoor",
+    href: "/collections/indoor",
   },
   {
-    label: "Accents",
-    href: "/collections/accents",
+    label: "Outdoor",
+    href: "/collections/outdoor",
   },
 ];
 
@@ -257,47 +252,49 @@ export default function Navbar() {
             <div className="flex items-center">
               {/* COLLECTIONS TEXT */}
 
-              <Link
-                href="/collections"
-                onClick={() => setCollectionsOpen(false)}
-                className="
-                  group
-                  relative
-                  inline-flex
-                  whitespace-nowrap
-                  py-2
-                  font-['Cormorant_Garamond']
-                  text-[16px]
-                  font-medium
-                  uppercase
-                  tracking-[0.10em]
-                  text-[#3A342C]
-                  transition-all
-                  duration-500
-                  ease-out
-                  hover:text-[#765A32]
-                "
-              >
-                <span className="relative">
-                  Collections
+            <button
+  type="button"
+  onClick={() => setCollectionsOpen((prev) => !prev)}
+  aria-expanded={collectionsOpen}
+  className="
+    group
+    relative
+    inline-flex
+    whitespace-nowrap
+    py-2
+    font-['Cormorant_Garamond']
+    text-[16px]
+    font-medium
+    uppercase
+    tracking-[0.10em]
+    text-[#3A342C]
+    transition-all
+    duration-500
+    ease-out
+    hover:text-[#765A32]
+  "
+>
+  <span className="relative">
+    Collections
 
-                  <span
-                    className="
-                      absolute
-                      -bottom-1
-                      left-1/2
-                      h-px
-                      w-0
-                      -translate-x-1/2
-                      bg-[#765A32]
-                      transition-all
-                      duration-500
-                      ease-out
-                      group-hover:w-full
-                    "
-                  />
-                </span>
-              </Link>
+    <span
+      className="
+        absolute
+        -bottom-1
+        left-1/2
+        h-px
+        w-0
+        -translate-x-1/2
+        bg-[#765A32]
+        transition-all
+        duration-500
+        ease-out
+        group-hover:w-full
+      "
+    />
+  </span>
+</button>
+           
 
               {/* ============================================= */}
               {/* CLICKABLE ARROW                               */}

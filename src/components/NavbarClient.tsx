@@ -30,99 +30,26 @@ interface NavbarClientProps {
 /* ========================================================= */
 /* COLLECTION CATEGORIES                                     */
 /* ========================================================= */
-
 const collectionSubLinks = [
+  // {
+  //   label: "All Collections",
+  //   href: "/collections",
+  //   description: "Explore the complete NIRA collection",
+  // },
   {
-    label: "All Collections",
-    href: "/collections",
+    label: "Indoor Collection",
+    href: "/collections/indoor",
     description:
-      "Explore the complete NIRA collection",
+      "Discover refined furniture for elegant indoor spaces",
   },
   {
-    label: "Bar Stools",
-    href: "/collections/bar-stools",
+    label: "Outdoor Collection",
+    href: "/collections/outdoor",
     description:
-      "Elevated seating for refined spaces",
-  },
-  {
-    label: "Console Table",
-    href: "/collections/console-table",
-    description:
-      "Elegant pieces for entryways",
-  },
-  {
-    label: "Dining Chairs",
-    href: "/collections/dining-chairs",
-    description:
-      "Comfortable seating for dining",
-  },
-  {
-    label: "Floating Trays",
-    href: "/collections/floating-trays",
-    description:
-      "Functional accents with sculptural form",
-  },
-  {
-    label: "Indoor Sofa Set",
-    href: "/collections/indoor-sofa-set",
-    description:
-      "Comfort-led furniture for interiors",
-  },
-  {
-    label: "Our Work",
-    href: "/collections/our-work",
-    description:
-      "Selected NIRA projects and spaces",
-  },
-  {
-    label: "Outdoor Chairs",
-    href: "/collections/outdoor-chairs",
-    description:
-      "Outdoor seating made for slow living",
-  },
-  {
-    label: "Outdoor Sofa Set",
-    href: "/collections/outdoor-sofa-set",
-    description:
-      "Lounge collections for open-air spaces",
-  },
-  {
-    label: "Rocking Chairs",
-    href: "/collections/rocking-chairs",
-    description:
-      "Relaxed seating with timeless character",
-  },
-  {
-    label: "Single Seater Sofa Indoor",
-    href: "/collections/single-seater-sofa-indoor",
-    description:
-      "Individual lounge pieces for interiors",
-  },
-  {
-    label: "Sun Loungers",
-    href: "/collections/sun-loungers",
-    description:
-      "Relaxed outdoor comfort",
-  },
-  {
-    label: "Swings Indoor",
-    href: "/collections/swings-indoor",
-    description:
-      "Statement seating for indoor spaces",
-  },
-  {
-    label: "Swings Outdoor",
-    href: "/collections/swings-outdoor",
-    description:
-      "Outdoor swings designed for comfort",
-  },
-  {
-    label: "Umbrella",
-    href: "/collections/umbrella",
-    description:
-      "Shade solutions for outdoor living",
+      "Explore premium furniture for outdoor living",
   },
 ];
+
 
 /* ========================================================= */
 /* NAVBAR CLIENT                                             */
