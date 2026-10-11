@@ -1068,7 +1068,7 @@ export default function NavbarClient({
                           )}
 
                         </div>
-
+{/* 
                         <Link
                           href="/collections"
                           onClick={
@@ -1115,7 +1115,7 @@ export default function NavbarClient({
                           >
                             →
                           </span>
-                        </Link>
+                        </Link> */}
 
                       </div>
                     </div>
